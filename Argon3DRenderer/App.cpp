@@ -1,8 +1,12 @@
 #include <iostream>
 #include "App.hpp"
+#include "Draw.hpp"
 
 int App::WINDOW_WIDTH = 800;
 int App::WINDOW_HEIGHT = 600;
+SDL_Renderer* App::renderer = nullptr;
+SDL_Texture* App::display_buffer_texture = nullptr;
+uint32_t* App::display_buffer = nullptr;
 
 
 App::App() {
@@ -33,6 +37,8 @@ App::App() {
 		std::cerr << "Error creating SDL_Renderer" << '\n';
 		return;
 	}
+
+	setup_display();
 
 	is_running = true;
 	return;
@@ -66,8 +72,8 @@ void App::render() {
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 	SDL_RenderClear(renderer);
 
-	draw_grid();
-	draw_rect(100, 100, 100, 100, 0xFFFFFFFF);
+	Draw::draw_grid();
+	Draw::draw_rect(100, 100, 100, 100, 0xFFFFFFFF);
 
 	render_display_buffer();
 
@@ -100,15 +106,6 @@ void App::clear_display_buffer() {
 }
 
 
-void App::draw_rect(int x, int y, int width, int height, uint32_t color) {
-	for (int j = y; j < y + height; j++) {
-		for (int i = x; i < x + width; i++) {
-			display_buffer[WINDOW_WIDTH * j + i] = color;
-		}
-	}
-}
-
-
 void App::destroy() {
 	delete display_buffer;
 	SDL_DestroyRenderer(renderer);
@@ -122,20 +119,3 @@ void App::render_display_buffer() {
 	SDL_RenderCopy(renderer, display_buffer_texture, NULL, NULL);
 }
 
-
-//draws a white grid of 10 pixel boxes
-void App::draw_grid() {
-	//vertical lines
-	for (int y = 0; y < WINDOW_HEIGHT; y++) {
-		for (int x = 0; x < WINDOW_WIDTH; x += 10) {
-			display_buffer[WINDOW_WIDTH * y + x] = 0xFFFFFFFF;
-		}
-	}
-
-	//horizontal lines
-	for (int y = 0; y < WINDOW_HEIGHT; y += 10) {
-		for (int x = 0; x < WINDOW_WIDTH; x++) {
-			display_buffer[WINDOW_WIDTH * y + x] = 0xFFFFFFFF;
-		}
-	}
-}
