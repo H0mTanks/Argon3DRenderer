@@ -1,6 +1,13 @@
 #include <iostream>
+#include <vector>
 #include "App.hpp"
 #include "Draw.hpp"
+#include "Vector.hpp"
+
+
+static const int N_VECTORS = 9 * 9 * 9;
+std::vector<Vector3> cube_vectors;
+std::vector<Vector2> projection_vectors;
 
 int App::WINDOW_WIDTH = 800;
 int App::WINDOW_HEIGHT = 600;
@@ -64,16 +71,20 @@ void App::process_input() {
 
 
 void App::update() {
-
+	for (int i = 0; i < N_VECTORS; i++) {
+		Vector3 vector = cube_vectors[i];
+		Vector2 projection_vector = vector.project();
+		projection_vectors.push_back(projection_vector);
+	}
 }
 
 
 void App::render() {
-	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-	SDL_RenderClear(renderer);
-
-	Draw::draw_grid();
-	Draw::draw_rect(100, 100, 100, 100, 0xFFFFFFFF);
+	/*Draw::draw_grid();*/
+	for (int i = 0; i < N_VECTORS; i++) {
+		Draw::draw_rect(static_cast<int>(projection_vectors[i].x + WINDOW_WIDTH/2), 
+			static_cast<int>(projection_vectors[i].y + WINDOW_HEIGHT/2), 4, 4, 0xFFFF00FF);
+	}
 
 	render_display_buffer();
 
@@ -92,16 +103,23 @@ void App::setup_display() {
 	}
 
 	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	cube_vectors.reserve(N_VECTORS);
+	projection_vectors.reserve(N_VECTORS);
+
+	for (float x = -1; x <= 1; x += 0.25) {
+		for (float y = -1; y <= 1; y += 0.25) {
+			for (float z = -1; z <= 1; z += 0.25) {
+				Vector3 new_vector = { x, y, z };
+				cube_vectors.push_back(new_vector);
+			} 
+		}
+	}
+
 }
 
 
 void App::clear_display_buffer() {
-	/*for (int y = 0; y < WINDOW_HEIGHT; y++) {
-		for (int x = 0; x < WINDOW_WIDTH; x++) {
-			display_buffer[WINDOW_WIDTH * y + x] = color;
-		}
-	}*/
-
 	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32_t));
 }
 

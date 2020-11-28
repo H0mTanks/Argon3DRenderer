@@ -1,10 +1,17 @@
 #include "Draw.hpp"
+#include <iostream>
 
 void Draw::draw_rect(int x, int y, int width, int height, uint32_t color) {
 	for (int j = y; j < y + height; j++) {
 		for (int i = x; i < x + width; i++) {
-			App::display_buffer[App::WINDOW_WIDTH * j + i] = color;
+			draw_pixel(i, j, color);
 		}
+	}
+}
+
+void Draw::draw_pixel(int x, int y, uint32_t color) {
+	if (x < App::WINDOW_WIDTH && y < App::WINDOW_HEIGHT && x >= 0 && y >= 0) {
+		App::display_buffer[App::WINDOW_WIDTH * y + x] = color;
 	}
 }
 

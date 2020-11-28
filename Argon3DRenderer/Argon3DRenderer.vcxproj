@@ -22,10 +22,12 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp" />
     <ClInclude Include="Draw.hpp" />
+    <ClInclude Include="Vector.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -24,12 +24,18 @@
     <ClCompile Include="Draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Vector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Draw.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
