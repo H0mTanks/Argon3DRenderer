@@ -1,10 +1,13 @@
 #pragma once
 #include "App.hpp"
+#include "Triangle.hpp"
 
 namespace Draw {
 
-	void draw_grid();
-	void draw_rect(const int x, const int y, const int width, const int height, const uint32_t color);
-	void draw_pixel(const int x, const int y, const uint32_t color);
+	void grid();
+	void pixel(const int x, const int y, const uint32_t color);
+	void line(const int x0, const int x1, const int y0, const int y1, uint32_t color);
+	void rectangle(const int x, const int y, const int width, const int height, const uint32_t color);
+	void triangle(Triangle const& triangle, uint32_t color);
 };
 

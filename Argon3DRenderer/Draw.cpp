@@ -2,34 +2,66 @@
 #include "Draw.hpp"
 
 
-void Draw::draw_rect(const int x, const int y, const int width, const int height, const uint32_t color) {
+void Draw::rectangle(const int x, const int y, const int width, const int height, const uint32_t color) {
 	for (int j = y; j < y + height; j++) {
 		for (int i = x; i < x + width; i++) {
-			draw_pixel(i, j, color);
+			pixel(i, j, color);
 		}
 	}
 }
 
 
-void Draw::draw_pixel(const int x, const int y, const uint32_t color) {
+void Draw::triangle(Triangle const& triangle, uint32_t color) {
+	const int num_sides = 3;
+
+	for (int i = 0; i < num_sides; i++) {
+		//uncomment rectangle line to draw vertices explicitly
+		/*rectangle(triangle.points[i].x, triangle.points[i].y, 4, 4, color);*/
+		line(triangle.points[i].x, triangle.points[(i + 1) % num_sides].x, triangle.points[i].y, triangle.points[(i + 1) % num_sides].y, color);
+	}
+}
+
+
+void Draw::line(const int x0, const int x1, const int y0, const int y1, uint32_t color) {
+	int delta_x = x1 - x0;
+	int delta_y = y1 - y0;
+
+	int side_length = abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y);
+
+	float x_inc = delta_x / (float)side_length;
+	float y_inc = delta_y / (float)side_length;
+
+	float current_x = x0;
+	float current_y = y0;
+
+	for (int i = 0; i <= side_length; i++) {
+		pixel(round(current_x), round(current_y), color);
+		current_x += x_inc;
+		current_y += y_inc;
+	}
+}
+
+
+
+void Draw::pixel(const int x, const int y, const uint32_t color) {
 	if (x < App::WINDOW_WIDTH && y < App::WINDOW_HEIGHT && x >= 0 && y >= 0) {
 		App::display_buffer[App::WINDOW_WIDTH * y + x] = color;
 	}
 }
 
-//Draws a white grid of 10 pixel boxes
-void Draw::draw_grid() {
+//Draws a dark grey grid of 30 pixel boxes
+void Draw::grid() {
 	//vertical lines
 	for (int y = 0; y < App::WINDOW_HEIGHT; y++) {
-		for (int x = 0; x < App::WINDOW_WIDTH; x += 10) {
-			App::display_buffer[App::WINDOW_WIDTH * y + x] = 0xFFFFFFFF;
+		for (int x = 0; x < App::WINDOW_WIDTH; x += 30) {
+			App::display_buffer[App::WINDOW_WIDTH * y + x] = 0x101010FF;
 		}
 	}
 
 	//horizontal lines
-	for (int y = 0; y < App::WINDOW_HEIGHT; y += 10) {
+	for (int y = 0; y < App::WINDOW_HEIGHT; y += 30) {
 		for (int x = 0; x < App::WINDOW_WIDTH; x++) {
-			App::display_buffer[App::WINDOW_WIDTH * y + x] = 0xFFFFFFFF;
+			App::display_buffer[App::WINDOW_WIDTH * y + x] = 0x101010FF;
 		}
 	}
 }

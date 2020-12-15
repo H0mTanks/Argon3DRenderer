@@ -6,6 +6,7 @@ struct Vector2 {
 	float x{ 0.0f };
 	float y{ 0.0f };
 
+	Vector2();
 	Vector2(float x, float y);
 };
 std::ostream& operator<<(std::ostream& stream, Vector2 const& v);
@@ -13,9 +14,9 @@ std::ostream& operator<<(std::ostream& stream, Vector2 const& v);
 
 // Struct for holding a 3-Dimensional Vector
 struct Vector3 {
-	float x{ 0.0f };
-	float y{ 0.0f };
-	float z{ 0.0f };
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
 
 	Vector3();
 	Vector3(float x, float y, float z);

@@ -22,11 +22,15 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp" />
     <ClInclude Include="Draw.hpp" />
+    <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="Triangle.hpp" />
     <ClInclude Include="Vector.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -3,13 +3,12 @@
 #include "App.hpp"
 #include "Draw.hpp"
 #include "Vector.hpp"
+#include "Mesh.hpp"
 
-static const int N_VECTORS = 9 * 9 * 9;
-std::vector<Vector3> cube_vectors;
-std::vector<Vector2> projection_vectors;
 
 Vector3 camera_position = Vector3(0, 0, -5);
 Vector3 cube_rotation = Vector3(0, 0, 0);
+Triangle triangles_to_render[N_MESH_FACES];
 
 
 int App::WINDOW_WIDTH = 800;
@@ -69,11 +68,12 @@ void App::process_input() {
 			is_running = false;
 			break;
 		}
-		case SDL_KEYDOWN:
+		case SDL_KEYDOWN: {
 			if (event.key.keysym.sym == SDLK_ESCAPE) {
 				is_running = false;
 				break;
 			}
+		}
 	}
 }
 
@@ -82,29 +82,42 @@ void App::process_input() {
 // Updates each frame
 void App::update() {
 
-	projection_vectors.clear();
 	cube_rotation.x += 0.01f;
 	cube_rotation.y += 0.01f;
 	cube_rotation.z += 0.01f;
 
-	for (int i = 0; i < N_VECTORS; i++) {
-		Vector3 vector = cube_vectors[i];
+	Triangle projected_triangle;
 
-		Vector3 transformed_vector = vector.rotate_xyz(cube_rotation.x, cube_rotation.y, cube_rotation.z);
-		transformed_vector.z -= camera_position.z;
+	for (int i = 0; i < N_MESH_FACES; i++) {
+		Face mesh_face = mesh_faces[i];
 
-		Vector2 projection_vector = transformed_vector.perspective_project();
-		projection_vectors.push_back(projection_vector);
-	}	
+		Vector3 face_vertices[3];
+		face_vertices[0] = mesh_vertices[mesh_face.a - 1];
+		face_vertices[1] = mesh_vertices[mesh_face.b - 1];
+		face_vertices[2] = mesh_vertices[mesh_face.c - 1];
+
+		for (int j = 0; j < 3; j++) {
+			Vector3 transformed_vertex = face_vertices[j];
+			transformed_vertex = transformed_vertex.rotate_xyz(cube_rotation.x, cube_rotation.y, cube_rotation.z);
+
+			Vector2 projected_point = transformed_vertex.orthographic_project();
+
+			projected_point.x += WINDOW_WIDTH / 2;
+			projected_point.y += WINDOW_HEIGHT / 2;
+			projected_triangle.points[j] = projected_point;
+		}
+		triangles_to_render[i] = projected_triangle;
+	}
 }
 
 
 // Renders the current display buffer
 void App::render() {
-	/*Draw::draw_grid();*/
-	for (int i = 0; i < N_VECTORS; i++) {
-		Draw::draw_rect(static_cast<int>(projection_vectors[i].x + WINDOW_WIDTH / 2),
-			static_cast<int>(projection_vectors[i].y + WINDOW_HEIGHT / 2), 4, 4, 0xFFFFffFF);
+	Draw::grid();
+
+	for (int i = 0; i < N_MESH_FACES; i++) {
+		Triangle triangle = triangles_to_render[i];
+		Draw::triangle(triangle, 0xFFFFFF00);
 	}
 
 	render_display_buffer();
@@ -118,18 +131,6 @@ void App::render() {
 
 //	Sets up the display buffer and should be called during Initialisation
 void App::setup_display() {
-
-	cube_vectors.reserve(N_VECTORS);
-	projection_vectors.reserve(N_VECTORS);
-
-	for (float x = -1; x <= 1; x += 0.25) {
-		for (float y = -1; y <= 1; y += 0.25) {
-			for (float z = -1; z <= 1; z += 0.25) {
-				Vector3 new_vector = { x, y, z };
-				cube_vectors.push_back(new_vector);
-			}
-		}
-	}
 
 	display_buffer = static_cast<uint32_t*> (new uint32_t[WINDOW_WIDTH * WINDOW_HEIGHT]);
 	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32_t));

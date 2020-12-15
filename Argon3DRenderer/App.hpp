@@ -13,7 +13,7 @@ public:
 	static SDL_Renderer* renderer;
 	static SDL_Texture* display_buffer_texture;
 	static uint32_t* display_buffer;
-	bool is_running{ false };
+	bool is_running = false;
 
 public:
 	App();
@@ -24,8 +24,5 @@ public:
 	void clear_display_buffer();
 	void setup_display();
 	void destroy();
-
-public:
-	void create_cube();
 };
 
