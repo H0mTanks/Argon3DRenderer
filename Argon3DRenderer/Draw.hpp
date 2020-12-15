@@ -1,11 +1,10 @@
 #pragma once
 #include "App.hpp"
 
-class Draw {
-public:
-	static void draw_grid();
-	static void draw_rect(int x, int y, int width, int height, uint32_t color);
-	static void draw_pixel(int x, int y, uint32_t color);
-	
+namespace Draw {
+
+	void draw_grid();
+	void draw_rect(const int x, const int y, const int width, const int height, const uint32_t color);
+	void draw_pixel(const int x, const int y, const uint32_t color);
 };
 

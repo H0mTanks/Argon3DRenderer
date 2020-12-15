@@ -24,5 +24,8 @@ public:
 	void clear_display_buffer();
 	void setup_display();
 	void destroy();
+
+public:
+	void create_cube();
 };
 
