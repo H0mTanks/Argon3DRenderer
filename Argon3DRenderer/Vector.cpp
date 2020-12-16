@@ -22,7 +22,7 @@ Vector3::Vector3(float x, float y, float z) : x(x), y(y), z(z)
 /// </summary>
 /// <returns>Vector2 object</returns>
 Vector2 Vector3::orthographic_project() const {
-	float fov_factor = 128; //lowest for rec size 4 is 16
+	float fov_factor = 8; //lowest for rec size 4 is 16
 	Vector3 const& original_vector = *this;
 	Vector2 projection_vector = { fov_factor * original_vector.x, fov_factor * original_vector.y };
 	return projection_vector;
@@ -30,7 +30,7 @@ Vector2 Vector3::orthographic_project() const {
 
 Vector2 Vector3::perspective_project() const
 {
-	float fov_factor = 640;
+	float fov_factor = 10;
 	Vector3 const& original_vector = *this;
 	Vector2 projection_vector = { (fov_factor * original_vector.x) / original_vector.z,
 		(fov_factor * original_vector.y) / original_vector.z };

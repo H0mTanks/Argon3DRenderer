@@ -7,9 +7,10 @@
 
 
 Vector3 camera_position = Vector3(0, 0, -5);
-Vector3 cube_rotation = Vector3(0, 0, 0);
-Triangle triangles_to_render[N_MESH_FACES];
+//Triangle triangles_to_render[N_MESH_FACES];
+std::vector<Triangle> triangles_to_render;
 
+Mesh mesh;
 
 int App::WINDOW_WIDTH = 800;
 int App::WINDOW_HEIGHT = 600;
@@ -70,7 +71,7 @@ void App::process_input() {
 		}
 		case SDL_KEYDOWN: {
 			if (event.key.keysym.sym == SDLK_ESCAPE) {
-				is_running = false;
+				quit();
 				break;
 			}
 		}
@@ -78,27 +79,30 @@ void App::process_input() {
 }
 
 
-
 // Updates each frame
 void App::update() {
 
-	cube_rotation.x += 0.01f;
-	cube_rotation.y += 0.01f;
-	cube_rotation.z += 0.01f;
+	mesh.rotation.x += 0.01f;
+	mesh.rotation.y += 0.01f;
+	mesh.rotation.z += 0.00f;
 
 	Triangle projected_triangle;
+	/*std::cout << "here3" << '\n';*/
 
-	for (int i = 0; i < N_MESH_FACES; i++) {
-		Face mesh_face = mesh_faces[i];
+
+	for (int i = 0; i < mesh.faces.size(); i++) {
+		Face& mesh_face = mesh.faces[i];
 
 		Vector3 face_vertices[3];
-		face_vertices[0] = mesh_vertices[mesh_face.a - 1];
-		face_vertices[1] = mesh_vertices[mesh_face.b - 1];
-		face_vertices[2] = mesh_vertices[mesh_face.c - 1];
+		face_vertices[0] = mesh.vertices[mesh_face.a - 1];
+		face_vertices[1] = mesh.vertices[mesh_face.b - 1];
+		face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
 		for (int j = 0; j < 3; j++) {
 			Vector3 transformed_vertex = face_vertices[j];
-			transformed_vertex = transformed_vertex.rotate_xyz(cube_rotation.x, cube_rotation.y, cube_rotation.z);
+			transformed_vertex = transformed_vertex.rotate_xyz(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
+
+			transformed_vertex.z -= camera_position.z;
 
 			Vector2 projected_point = transformed_vertex.orthographic_project();
 
@@ -106,7 +110,9 @@ void App::update() {
 			projected_point.y += WINDOW_HEIGHT / 2;
 			projected_triangle.points[j] = projected_point;
 		}
-		triangles_to_render[i] = projected_triangle;
+		triangles_to_render.push_back(projected_triangle);
+		/*std::cout << "rendering " << count << '\n';
+		count++;*/
 	}
 }
 
@@ -115,13 +121,18 @@ void App::update() {
 void App::render() {
 	Draw::grid();
 
-	for (int i = 0; i < N_MESH_FACES; i++) {
+	int trianglesize = triangles_to_render.size();
+
+	for (int i = 0; i < trianglesize; i++) {
 		Triangle triangle = triangles_to_render[i];
 		Draw::triangle(triangle, 0xFFFFFF00);
 	}
 
+
+
 	render_display_buffer();
 
+	triangles_to_render.clear();
 	clear_display_buffer();
 
 	SDL_RenderPresent(renderer);
@@ -141,11 +152,24 @@ void App::setup_display() {
 
 	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	if (!mesh.load_obj_mesh_data("./assets/duck.obj")) {
+		quit();
+		return;
+	}
+
+	std::cout << "done" << '\n';
+
 }
 
 
 void App::clear_display_buffer() {
 	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32_t));
+}
+
+
+void App::quit() {
+	is_running = false;
+	return;
 }
 
 

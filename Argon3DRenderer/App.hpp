@@ -23,6 +23,7 @@ public:
 	void render_display_buffer();
 	void clear_display_buffer();
 	void setup_display();
+	void quit();
 	void destroy();
 };
 

@@ -1,33 +1,23 @@
 #pragma once
+
 #include <vector>
 #include "Vector.hpp"
 #include "Triangle.hpp"
 
-#define N_MESH_VERTICES 8
 
-std::vector<Vector3> mesh_vertices = {
-   {-1 , -1, -1},
-   {-1 ,  1, -1},
-   { 1 ,  1, -1},
-   { 1 , -1, -1},
-   { 1 ,  1,  1},
-   { 1 , -1,  1},
-   {-1 ,  1,  1},
-   {-1 , -1,  1},
-};
+class Mesh {
+public:
+	std::vector<Vector3> vertices;
+	std::vector<Vector3> normals; //added
+	std::vector<Vector2> textures; //added
+	std::vector<Face> faces;
+	std::vector<Face> normal_indices;
+	std::vector<Face> texture_indices;
+	Vector3 rotation = { 0, 0, 0 };
 
-#define N_MESH_FACES (6 * 2)
-std::vector<Face> mesh_faces = {
-	{1, 2, 3},
-	{1, 3, 4},
-	{4, 3, 5},
-	{4, 5, 6},
-	{6, 5, 7},
-	{6, 7, 8},
-	{8, 7, 2},
-	{8, 2, 1},
-	{2, 7, 5},
-	{2, 5, 3},
-	{6, 8, 1},
-	{6, 1, 4},
+public:
+	Mesh();
+	Mesh(int num_vertices, int num_faces, Vector3& rotation);
+	bool load_obj_mesh_data(const char* filepath);
+	void load_cube_mesh_data();
 };
