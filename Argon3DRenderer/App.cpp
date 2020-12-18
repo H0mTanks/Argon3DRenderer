@@ -85,9 +85,9 @@ void App::process_input()
 void App::update()
 {
 
-	mesh.rotation.x += 0.01f;
+	mesh.rotation.x = 3.14159265f * 0.5;
 	mesh.rotation.y += 0.01f;
-	mesh.rotation.z += 0.01f;
+	mesh.rotation.z += 0.00f;
 
 	Triangle3D transformed_triangle;
 	Triangle2D projected_triangle;
@@ -114,10 +114,10 @@ void App::update()
 
 
 		for (int j = 0; j < 3; j++) {
-			Vector2 projected_point = transformed_triangle.points[j].orthographic_project();
+			Vector2 projected_point = transformed_triangle.points[j].perspective_project();
 
-			projected_point.x += WINDOW_WIDTH / 2;
-			projected_point.y += WINDOW_HEIGHT / 2;
+			projected_point.x += WINDOW_WIDTH * 0.5;
+			projected_point.y += WINDOW_HEIGHT * 0.85;
 			projected_triangle.points[j] = projected_point;
 		}
 		triangles_to_render.push_back(projected_triangle);
@@ -133,11 +133,29 @@ void App::render()
 	Draw::grid();
 
 	int trianglesize = triangles_to_render.size();
-
 	for (int i = 0; i < trianglesize; i++) {
 		Triangle2D triangle = triangles_to_render[i];
-		Draw::triangle(triangle, 0xFFFFFF00);
+		Draw::filled_triangle(triangle, 0xFFFFFF00);
+		Draw::triangle(triangle, 0x000000FF);
 	}
+
+	/*int trianglesize = triangles_to_render.size();
+	for (int i = 0; i < trianglesize; i++) {
+		Triangle2D triangle = triangles_to_render[i];
+		int ax = triangle.points[0].x;
+		int bx = triangle.points[1].x;
+		int cx = triangle.points[2].x;
+		int ay = triangle.points[0].y;
+		int by = triangle.points[1].y;
+		int cy = triangle.points[2].y;
+
+
+		Draw::filled_triangle(ax, ay, bx, by, cx, cy, 0xFFFFFF00);
+	}*/
+
+	/*Triangle2D trianglet = { Vector2(300, 100), Vector2(50, 400), Vector2(500, 700) };
+
+	Draw::filled_triangle(300, 100, 50, 400, 500, 700, 0xFFFFFF00);*/
 
 
 	render_display_buffer();
@@ -163,7 +181,7 @@ void App::setup_display()
 
 	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	if (!mesh.load_obj_mesh_data("./assets/cube.obj")) {
+	if (!mesh.load_obj_mesh_data("./assets/duck2.obj")) {
 		quit();
 		return;
 	}

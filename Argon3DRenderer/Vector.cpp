@@ -75,7 +75,7 @@ Vector3::Vector3(float x, float y, float z) : x(x), y(y), z(z)
 /// <returns>Vector2 object</returns>
 Vector2 Vector3::orthographic_project() const
 {
-	float fov_factor = 128; //lowest for rec size 4 is 16
+	float fov_factor = 8; //duck 8
 	Vector3 const& original_vector = *this;
 	Vector2 projection_vector = { fov_factor * original_vector.x, fov_factor * original_vector.y };
 	return projection_vector;
@@ -83,7 +83,7 @@ Vector2 Vector3::orthographic_project() const
 
 Vector2 Vector3::perspective_project() const
 {
-	float fov_factor = 14400;
+	float fov_factor = 640 * 2;
 	Vector3 const& original_vector = *this;
 	Vector2 projection_vector = { (fov_factor * original_vector.x) / original_vector.z,
 		(fov_factor * original_vector.y) / original_vector.z };
@@ -194,4 +194,18 @@ Vector3 Vector3::normalize() const
 	Vector3 const& v = *this;
 	float magnitude = v.magnitude();
 	return Vector3(v.x / magnitude, v.y / magnitude, v.z / magnitude);
+}
+
+Vector2_int::Vector2_int()
+{
+}
+
+Vector2_int::Vector2_int(int x, int y) : x(x), y(y)
+{
+}
+
+Vector2_int Vector2_int::sub(Vector2_int const& v2) const
+{
+	Vector2_int const& v1 = *this;
+	return Vector2_int(v1.x - v2.x, v1.y - v2.y);
 }

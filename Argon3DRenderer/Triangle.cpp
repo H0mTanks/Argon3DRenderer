@@ -8,8 +8,11 @@ bool Triangle3D::backface(Vector3 const& camera_position) const
 
 	Vector3 ab = b.sub(a);
 	Vector3 ac = c.sub(a);
+	//ab = ab.normalize();
+	//ac = ac.normalize();
 
 	Vector3 normal = ab.cross(ac); //v1 x v2
+	//normal = normal.normalize();
 
 	Vector3 camera_ray = camera_position.sub(a);
 

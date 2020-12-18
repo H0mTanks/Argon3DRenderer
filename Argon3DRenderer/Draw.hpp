@@ -11,6 +11,10 @@ namespace Draw
 	void rectangle(const int x, const int y, const int width, const int height, const uint32_t color);
 	void triangle(Triangle2D const& triangle, uint32_t color);
 	void filled_triangle(Triangle2D const& triangle, uint32_t color);
-	void fill_flat_bottom_triangle(Vector2 const& a, Vector2 const& b, Vector2 const& m, uint32_t color);
-	void fill_flat_top_triangle(Vector2 const& a, Vector2 const& b, Vector2 const& m, uint32_t color);
+	void filled_triangle(int ax, int ay, int bx, int by, int cx, int cy, uint32_t color);
+	void fill_flat_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& m, uint32_t color);
+	void fill_flat_bottom_triangle(int ax, int ay, int bx, int by, int cx, int cy, uint32_t color);
+	void fill_flat_top_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& m, uint32_t color);
+	void fill_flat_top_triangle(int ax, int ay, int bx, int by, int cx, int cy, uint32_t color);
+
 };

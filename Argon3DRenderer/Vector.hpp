@@ -52,3 +52,17 @@ public:
 
 };
 std::ostream& operator<<(std::ostream& stream, Vector3 const& v);
+
+
+struct Vector2_int
+{
+	int x = 0;
+	int y = 0;
+	int z = 0;
+
+public:
+	Vector2_int();
+	Vector2_int(int x, int y);
+
+	Vector2_int sub(Vector2_int const& v2) const;
+};
