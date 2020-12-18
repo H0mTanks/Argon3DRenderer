@@ -1,13 +1,11 @@
 #include <iostream>
 #include <vector>
 #include "App.hpp"
-#include "Draw.hpp"
 #include "Vector.hpp"
 #include "Mesh.hpp"
 
 
 Vector3 camera_position = Vector3(0, 0, 0);
-//Triangle triangles_to_render[N_MESH_FACES];
 std::vector<Triangle2D> triangles_to_render;
 
 Mesh mesh;
@@ -74,8 +72,26 @@ void App::process_input()
 		case SDL_KEYDOWN: {
 			if (event.key.keysym.sym == SDLK_ESCAPE) {
 				quit();
-				break;
 			}
+			if (event.key.keysym.sym == SDLK_1) {
+				render_type = Draw::Render_type::RENDER_WIREFRAME_VERTEX;
+			}
+			if (event.key.keysym.sym == SDLK_2) {
+				render_type = Draw::Render_type::RENDER_WIREFRAME;
+			}
+			if (event.key.keysym.sym == SDLK_3) {
+				render_type = Draw::Render_type::RENDER_FILL_TRIANGLE;
+			}
+			if (event.key.keysym.sym == SDLK_4) {
+				render_type = Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME;
+			}
+			if (event.key.keysym.sym == SDLK_c) {
+				cull_type = Draw::Cull_type::CULL_BACKFACE;
+			}
+			if (event.key.keysym.sym == SDLK_d) {
+				cull_type = Draw::Cull_type::CULL_NONE;
+			}
+			break;
 		}
 	}
 }
@@ -108,10 +124,11 @@ void App::update()
 			transformed_triangle.points[j] = transformed_vertex;
 		}
 
-		if (transformed_triangle.backface(camera_position)) {
-			continue;
+		if (cull_type == Draw::Cull_type::CULL_BACKFACE) {
+			if (transformed_triangle.backface(camera_position)) {
+				continue;
+			}
 		}
-
 
 		for (int j = 0; j < 3; j++) {
 			Vector2 projected_point = transformed_triangle.points[j].perspective_project();
@@ -135,9 +152,28 @@ void App::render()
 	int trianglesize = triangles_to_render.size();
 	for (int i = 0; i < trianglesize; i++) {
 		Triangle2D triangle = triangles_to_render[i];
-		Draw::filled_triangle(triangle, 0xFFFFFF00);
-		Draw::triangle(triangle, 0x000000FF);
+		if (render_type == Draw::Render_type::RENDER_FILL_TRIANGLE || render_type == Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME) {
+			Draw::fill_triangle(triangle, 0x55555500);
+		}
+
+		if (render_type != Draw::Render_type::RENDER_FILL_TRIANGLE) {
+			Draw::triangle(triangle, 0xDDDDDD00);
+		}
+
+		if (render_type == Draw::Render_type::RENDER_WIREFRAME_VERTEX) {
+			Draw::rectangle(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFFFFFF00);
+			Draw::rectangle(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFFFFFF00);
+			Draw::rectangle(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, 0xFFFFFF00);
+		}
 	}
+
+	render_display_buffer();
+
+	triangles_to_render.clear();
+	clear_display_buffer();
+
+	SDL_RenderPresent(renderer);
+}
 
 	/*int trianglesize = triangles_to_render.size();
 	for (int i = 0; i < trianglesize; i++) {
@@ -156,15 +192,6 @@ void App::render()
 	/*Triangle2D trianglet = { Vector2(300, 100), Vector2(50, 400), Vector2(500, 700) };
 
 	Draw::filled_triangle(300, 100, 50, 400, 500, 700, 0xFFFFFF00);*/
-
-
-	render_display_buffer();
-
-	triangles_to_render.clear();
-	clear_display_buffer();
-
-	SDL_RenderPresent(renderer);
-}
 
 
 

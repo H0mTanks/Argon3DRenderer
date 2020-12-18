@@ -1,6 +1,6 @@
 ﻿#include <iostream>
+#include "App.hpp"
 #include "Draw.hpp"
-
 
 void Draw::rectangle(const int x, const int y, const int width, const int height, const uint32_t color)
 {
@@ -19,7 +19,7 @@ void Draw::triangle(Triangle2D const& triangle, uint32_t color)
 	line(triangle.points[2].x, triangle.points[2].y, triangle.points[0].x, triangle.points[0].y, color);
 }
 
-void Draw::filled_triangle(Triangle2D const& triangle, uint32_t color)
+void Draw::fill_triangle(Triangle2D const& triangle, uint32_t color)
 {
 	Vector2_int a(triangle.points[0].x, triangle.points[0].y);
 	Vector2_int b(triangle.points[1].x, triangle.points[1].y);
@@ -44,14 +44,14 @@ void Draw::filled_triangle(Triangle2D const& triangle, uint32_t color)
 
 	Vector2_int m(((c.x - a.x) * (b.y - a.y)) / (c.y - a.y) + a.x, b.y);
 
-	fill_flat_bottom_triangle(a, b, m, color);
+	fill_bottom_triangle(a, b, m, color);
 	
-	fill_flat_top_triangle(b, m, c, color);
+	fill_top_triangle(b, m, c, color);
 
 }
 
 
-void Draw::filled_triangle(int ax, int ay, int bx, int by, int cx, int cy, uint32_t color)
+void Draw::fill_triangle(int ax, int ay, int bx, int by, int cx, int cy, uint32_t color)
 {
 	if (ay == by && ay == cy) { //protect against degenerate triangles to avoid divisions by zero later
 		return;
@@ -76,13 +76,13 @@ void Draw::filled_triangle(int ax, int ay, int bx, int by, int cx, int cy, uint3
 	int my = by;
 
 
-	fill_flat_bottom_triangle(ax, ay, bx, by, mx, my, color);
+	fill_bottom_triangle(ax, ay, bx, by, mx, my, color);
 
-	fill_flat_top_triangle(bx, by, mx, my, cx, cy, color);
+	fill_top_triangle(bx, by, mx, my, cx, cy, color);
 }
 
 
-void Draw::fill_flat_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& m, uint32_t color)
+void Draw::fill_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& m, uint32_t color)
 {
 	
 	float slope_ab = (float)(a.x - b.x) / (a.y - b.y);
@@ -101,7 +101,7 @@ void Draw::fill_flat_bottom_triangle(Vector2_int const& a, Vector2_int const& b,
 	}
 }
 
-void Draw::fill_flat_bottom_triangle(int ax, int ay, int bx, int by, int mx, int my, uint32_t color)
+void Draw::fill_bottom_triangle(int ax, int ay, int bx, int by, int mx, int my, uint32_t color)
 {
 	float slope_ab = (float)(ax - bx) / (ay - by);
 	float slope_am = (float)(ax - mx) / (ay - my);
@@ -120,7 +120,7 @@ void Draw::fill_flat_bottom_triangle(int ax, int ay, int bx, int by, int mx, int
 }
 
 
-void Draw::fill_flat_top_triangle(Vector2_int const& b, Vector2_int const& m, Vector2_int const& c, uint32_t color)
+void Draw::fill_top_triangle(Vector2_int const& b, Vector2_int const& m, Vector2_int const& c, uint32_t color)
 {
 	float slope_cb = (float)(c.x - b.x) / (c.y - b.y);
 	float slope_cm = (float)(c.x - m.x) / (c.y - m.y);
@@ -138,7 +138,7 @@ void Draw::fill_flat_top_triangle(Vector2_int const& b, Vector2_int const& m, Ve
 	}
 }
 
-void Draw::fill_flat_top_triangle(int bx, int by, int mx, int my, int cx, int cy, uint32_t color)
+void Draw::fill_top_triangle(int bx, int by, int mx, int my, int cx, int cy, uint32_t color)
 {
 	float slope_cb = (float)(cx - bx) / (cy - by);
 	float slope_cm = (float)(cx - mx) / (cy - my);
