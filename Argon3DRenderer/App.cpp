@@ -6,9 +6,9 @@
 #include "Mesh.hpp"
 
 
-Vector3 camera_position = Vector3(0, 0, -5);
+Vector3 camera_position = Vector3(0, 0, 0);
 //Triangle triangles_to_render[N_MESH_FACES];
-std::vector<Triangle> triangles_to_render;
+std::vector<Triangle2D> triangles_to_render;
 
 Mesh mesh;
 
@@ -22,7 +22,8 @@ uint32_t* App::display_buffer = nullptr;
 
 
 // Initializes SDL, Window, Renderer and DisplayBuffer
-App::App() {
+App::App()
+{
 	if (SDL_Init(SDL_INIT_EVERYTHING)) {
 		std::cerr << "Error Initializing SDL" << '\n';
 		return;
@@ -60,7 +61,8 @@ App::App() {
 
 
 // Processes User Input and Events
-void App::process_input() {
+void App::process_input()
+{
 	SDL_Event event;
 	SDL_PollEvent(&event);
 
@@ -80,20 +82,20 @@ void App::process_input() {
 
 
 // Updates each frame
-void App::update() {
+void App::update()
+{
 
 	mesh.rotation.x += 0.01f;
 	mesh.rotation.y += 0.01f;
-	mesh.rotation.z += 0.00f;
+	mesh.rotation.z += 0.01f;
 
-	Triangle projected_triangle;
-	/*std::cout << "here3" << '\n';*/
-
+	Triangle3D transformed_triangle;
+	Triangle2D projected_triangle;
 
 	for (int i = 0; i < mesh.faces.size(); i++) {
 		Face& mesh_face = mesh.faces[i];
 
-		Vector3 face_vertices[3];
+		std::array<Vector3, 3> face_vertices;
 		face_vertices[0] = mesh.vertices[mesh_face.a - 1];
 		face_vertices[1] = mesh.vertices[mesh_face.b - 1];
 		face_vertices[2] = mesh.vertices[mesh_face.c - 1];
@@ -102,9 +104,17 @@ void App::update() {
 			Vector3 transformed_vertex = face_vertices[j];
 			transformed_vertex = transformed_vertex.rotate_xyz(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
 
-			transformed_vertex.z -= camera_position.z;
+			transformed_vertex.z += 100;
+			transformed_triangle.points[j] = transformed_vertex;
+		}
 
-			Vector2 projected_point = transformed_vertex.orthographic_project();
+		if (transformed_triangle.backface(camera_position)) {
+			continue;
+		}
+
+
+		for (int j = 0; j < 3; j++) {
+			Vector2 projected_point = transformed_triangle.points[j].orthographic_project();
 
 			projected_point.x += WINDOW_WIDTH / 2;
 			projected_point.y += WINDOW_HEIGHT / 2;
@@ -118,16 +128,16 @@ void App::update() {
 
 
 // Renders the current display buffer
-void App::render() {
+void App::render()
+{
 	Draw::grid();
 
 	int trianglesize = triangles_to_render.size();
 
 	for (int i = 0; i < trianglesize; i++) {
-		Triangle triangle = triangles_to_render[i];
+		Triangle2D triangle = triangles_to_render[i];
 		Draw::triangle(triangle, 0xFFFFFF00);
 	}
-
 
 
 	render_display_buffer();
@@ -141,7 +151,8 @@ void App::render() {
 
 
 //	Sets up the display buffer and should be called during Initialisation
-void App::setup_display() {
+void App::setup_display()
+{
 
 	display_buffer = static_cast<uint32_t*> (new uint32_t[WINDOW_WIDTH * WINDOW_HEIGHT]);
 	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32_t));
@@ -152,7 +163,7 @@ void App::setup_display() {
 
 	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	if (!mesh.load_obj_mesh_data("./assets/duck.obj")) {
+	if (!mesh.load_obj_mesh_data("./assets/cube.obj")) {
 		quit();
 		return;
 	}
@@ -162,18 +173,21 @@ void App::setup_display() {
 }
 
 
-void App::clear_display_buffer() {
+void App::clear_display_buffer()
+{
 	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32_t));
 }
 
 
-void App::quit() {
+void App::quit()
+{
 	is_running = false;
 	return;
 }
 
 
-void App::destroy() {
+void App::destroy()
+{
 	delete display_buffer;
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
@@ -181,7 +195,8 @@ void App::destroy() {
 }
 
 
-void App::render_display_buffer() {
+void App::render_display_buffer()
+{
 	SDL_UpdateTexture(display_buffer_texture, NULL, display_buffer, WINDOW_WIDTH * sizeof(uint32_t));
 	SDL_RenderCopy(renderer, display_buffer_texture, NULL, NULL);
 }

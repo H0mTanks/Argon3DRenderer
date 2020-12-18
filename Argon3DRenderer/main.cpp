@@ -1,7 +1,8 @@
 #include "App.hpp"
 
 
-int main(int argc, char* args[]) {
+int main(int argc, char* args[])
+{
 	App* app = new App();
 
 	while (app->is_running) {

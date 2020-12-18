@@ -5,7 +5,8 @@
 #include "Triangle.hpp"
 
 
-class Mesh {
+class Mesh
+{
 public:
 	std::vector<Vector3> vertices;
 	std::vector<Vector3> normals; //added
@@ -19,5 +20,4 @@ public:
 	Mesh();
 	Mesh(int num_vertices, int num_faces, Vector3& rotation);
 	bool load_obj_mesh_data(const char* filepath);
-	void load_cube_mesh_data();
 };
