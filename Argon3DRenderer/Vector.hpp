@@ -4,8 +4,8 @@
 // Struct for holding a 2-Dimensional Vector
 struct Vector2
 {
-	float x{ 0.0f };
-	float y{ 0.0f };
+	float x = 0.0f;
+	float y = 0.0f;
 
 public:
 	Vector2();
@@ -23,6 +23,7 @@ std::ostream& operator<<(std::ostream& stream, Vector2 const& v);
 
 
 // Struct for holding a 3-Dimensional Vector
+struct Vector4;
 struct Vector3
 {
 	float x = 0.0f;
@@ -50,6 +51,8 @@ public:
 	Vector3 cross(Vector3 const& v2) const;
 	Vector3 normalize() const;
 
+	Vector4 to_vec4();
+
 };
 std::ostream& operator<<(std::ostream& stream, Vector3 const& v);
 
@@ -65,4 +68,18 @@ public:
 	Vector2_int(int x, int y);
 
 	Vector2_int sub(Vector2_int const& v2) const;
+};
+
+
+struct Vector4
+{
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
+	float w = 1.0f;
+
+public:
+	Vector4();
+	Vector4(float x, float y, float z, float w);
+	Vector3 to_vec3();
 };

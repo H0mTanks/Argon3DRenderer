@@ -80,3 +80,50 @@ bool Mesh::load_obj_mesh_data(const char* filepath)
 
 	return true;
 }
+
+#define N_CUBE_VERTICES 8
+#define N_CUBE_FACES (6 * 2)
+
+Vector3 cube_vertices[N_CUBE_VERTICES] = {
+    {-1, -1, -1 }, // 1
+    {-1, 1, -1 }, // 2
+    {1, 1, -1 }, // 3
+    {1, -1, -1 }, // 4
+    {1, 1, 1 }, // 5
+    {1, -1, 1 }, // 6
+    {-1, 1, 1 }, // 7
+    {-1, -1, 1 }  // 8
+};
+
+Face cube_faces[N_CUBE_FACES] = {
+    // front
+    {1, 2, 3, 0xFF0000FF },
+    {1, 3, 4, 0xFF0000FF },
+    // right
+    {4, 3, 5, 0x00FF00FF },
+    {4, 5, 6, 0x00FF00FF },
+    // back
+    {6, 5, 7, 0x0000FFFF },
+    {6, 7, 8, 0x0000FFFF },
+    // left
+    {8, 7, 2, 0xFFFF00FF },
+    {8, 2, 1, 0xFFFF00FF },
+    // top
+    {2, 7, 5, 0xFF00FFFF },
+    {2, 5, 3, 0xFF00FFFF },
+    // bottom
+    {6, 8, 1, 0x00FFFFFF },
+    {6, 1, 4, 0x00FFFFFF }
+};
+
+void Mesh::load_cube_mesh_data()
+{
+	for (int i = 0; i < N_CUBE_VERTICES; i++) {
+		Vector3 cube_vertex = cube_vertices[i];
+		vertices.push_back(cube_vertex);
+	}
+	for (int i = 0; i < N_CUBE_FACES; i++) {
+		Face cube_face = cube_faces[i];
+		faces.push_back(cube_face);
+	}
+}

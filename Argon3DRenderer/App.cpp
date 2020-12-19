@@ -1,12 +1,15 @@
 #include <iostream>
+#include <algorithm>
+#include <functional>
 #include <vector>
 #include "App.hpp"
 #include "Vector.hpp"
 #include "Mesh.hpp"
+#include "Matrix.hpp"
 
 
 Vector3 camera_position = Vector3(0, 0, 0);
-std::vector<Triangle2D> triangles_to_render;
+std::vector<Triangle2> triangles_to_render;
 
 Mesh mesh;
 
@@ -101,12 +104,25 @@ void App::process_input()
 void App::update()
 {
 
-	mesh.rotation.x = 3.14159265f * 0.5;
+	mesh.rotation.x += 0.01f/*3.14159265f * 0.5*/;
 	mesh.rotation.y += 0.01f;
-	mesh.rotation.z += 0.00f;
+	mesh.rotation.z += 0.01f;
 
-	Triangle3D transformed_triangle;
-	Triangle2D projected_triangle;
+	//mesh.scale.x += 0.002f;
+	//mesh.scale.y += 0.001f;
+
+	//mesh.translation.x += 0.01f;
+	mesh.translation.z = 5.0f;
+
+	Matrix4 scale_matrix = Matrix4::make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+	Matrix4 translation_matrix = Matrix4::make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
+	Matrix4 rotation_matrix_x = Matrix4::make_rotation_x(mesh.rotation.x);
+	Matrix4 rotation_matrix_y = Matrix4::make_rotation_y(mesh.rotation.y);
+	Matrix4 rotation_matrix_z = Matrix4::make_rotation_z(mesh.rotation.z);
+
+
+	Triangle3 transformed_triangle;
+	Triangle2 projected_triangle;
 
 	for (int i = 0; i < mesh.faces.size(); i++) {
 		Face& mesh_face = mesh.faces[i];
@@ -117,12 +133,14 @@ void App::update()
 		face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
 		for (int j = 0; j < 3; j++) {
-			Vector3 transformed_vertex = face_vertices[j];
-			transformed_vertex = transformed_vertex.rotate_xyz(mesh.rotation.x, mesh.rotation.y, mesh.rotation.z);
+			Vector4 transformed_vertex = face_vertices[j].to_vec4();
+			Matrix4 world_matrix = Matrix4::make_world(scale_matrix, rotation_matrix_x, 
+				rotation_matrix_y, rotation_matrix_z, translation_matrix);
+			transformed_vertex = world_matrix.mul_vector(transformed_vertex);
 
-			transformed_vertex.z += 100;
-			transformed_triangle.points[j] = transformed_vertex;
+			transformed_triangle.points[j] = transformed_vertex.to_vec3();
 		}
+
 
 		if (cull_type == Draw::Cull_type::CULL_BACKFACE) {
 			if (transformed_triangle.backface(camera_position)) {
@@ -130,17 +148,25 @@ void App::update()
 			}
 		}
 
+		float avg_depth = (transformed_triangle.points[0].z + transformed_triangle.points[1].z + transformed_triangle.points[2].z) / 3.0f;
+
+
 		for (int j = 0; j < 3; j++) {
 			Vector2 projected_point = transformed_triangle.points[j].perspective_project();
 
 			projected_point.x += WINDOW_WIDTH * 0.5;
-			projected_point.y += WINDOW_HEIGHT * 0.85;
+			projected_point.y += WINDOW_HEIGHT * 0.5;
 			projected_triangle.points[j] = projected_point;
 		}
+		projected_triangle.color = mesh_face.color;
+		projected_triangle.depth = avg_depth;
 		triangles_to_render.push_back(projected_triangle);
 		/*std::cout << "rendering " << count << '\n';
 		count++;*/
+
+		std::stable_sort(triangles_to_render.begin(), triangles_to_render.end(), std::greater<Triangle2>());
 	}
+
 }
 
 
@@ -151,9 +177,9 @@ void App::render()
 
 	int trianglesize = triangles_to_render.size();
 	for (int i = 0; i < trianglesize; i++) {
-		Triangle2D triangle = triangles_to_render[i];
+		Triangle2 triangle = triangles_to_render[i];
 		if (render_type == Draw::Render_type::RENDER_FILL_TRIANGLE || render_type == Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME) {
-			Draw::fill_triangle(triangle, 0x55555500);
+			Draw::fill_triangle(triangle, triangle.color);
 		}
 
 		if (render_type != Draw::Render_type::RENDER_FILL_TRIANGLE) {
@@ -177,7 +203,7 @@ void App::render()
 
 	/*int trianglesize = triangles_to_render.size();
 	for (int i = 0; i < trianglesize; i++) {
-		Triangle2D triangle = triangles_to_render[i];
+		Triangle2 triangle = triangles_to_render[i];
 		int ax = triangle.points[0].x;
 		int bx = triangle.points[1].x;
 		int cx = triangle.points[2].x;
@@ -189,7 +215,7 @@ void App::render()
 		Draw::filled_triangle(ax, ay, bx, by, cx, cy, 0xFFFFFF00);
 	}*/
 
-	/*Triangle2D trianglet = { Vector2(300, 100), Vector2(50, 400), Vector2(500, 700) };
+	/*Triangle2 trianglet = { Vector2(300, 100), Vector2(50, 400), Vector2(500, 700) };
 
 	Draw::filled_triangle(300, 100, 50, 400, 500, 700, 0xFFFFFF00);*/
 
@@ -208,10 +234,12 @@ void App::setup_display()
 
 	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	if (!mesh.load_obj_mesh_data("./assets/duck2.obj")) {
+	/*if (!mesh.load_obj_mesh_data("./assets/duck2.obj")) {
 		quit();
 		return;
-	}
+	}*/
+
+	mesh.load_cube_mesh_data();
 
 	std::cout << "done" << '\n';
 

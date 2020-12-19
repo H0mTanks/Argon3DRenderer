@@ -12,14 +12,14 @@ void Draw::rectangle(const int x, const int y, const int width, const int height
 }
 
 
-void Draw::triangle(Triangle2D const& triangle, uint32_t color)
+void Draw::triangle(Triangle2 const& triangle, uint32_t color)
 {
 	line(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, color);
 	line(triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, color);
 	line(triangle.points[2].x, triangle.points[2].y, triangle.points[0].x, triangle.points[0].y, color);
 }
 
-void Draw::fill_triangle(Triangle2D const& triangle, uint32_t color)
+void Draw::fill_triangle(Triangle2 const& triangle, uint32_t color)
 {
 	Vector2_int a(triangle.points[0].x, triangle.points[0].y);
 	Vector2_int b(triangle.points[1].x, triangle.points[1].y);

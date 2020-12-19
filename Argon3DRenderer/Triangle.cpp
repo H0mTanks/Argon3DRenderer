@@ -1,6 +1,15 @@
 #include "Triangle.hpp"
 
-bool Triangle3D::backface(Vector3 const& camera_position) const
+Triangle3::Triangle3()
+{
+}
+
+Triangle3::Triangle3(Vector3 a, Vector3 b, Vector3 c)
+{
+	points = { a, b, c };
+}
+
+bool Triangle3::backface(Vector3 const& camera_position) const
 {
 	Vector3 const& a = (*this).points[0];
 	Vector3 const& b = (*this).points[1];
@@ -17,4 +26,19 @@ bool Triangle3D::backface(Vector3 const& camera_position) const
 	Vector3 camera_ray = camera_position.sub(a);
 
 	return normal.dot(camera_ray) < 0;
+}
+
+bool Triangle2::operator<(Triangle2 const& t) const
+{
+	return depth < t.depth;
+}
+
+bool Triangle2::operator>(Triangle2 const& t) const
+{
+	return depth > t.depth;
+}
+
+Triangle3 Triangle4::to_triangle3()
+{
+	return Triangle3(points[0].to_vec3(), points[1].to_vec3(), points[2].to_vec3());
 }
