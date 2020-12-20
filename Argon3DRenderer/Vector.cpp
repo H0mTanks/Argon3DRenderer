@@ -75,7 +75,7 @@ Vector3::Vector3(float x, float y, float z) : x(x), y(y), z(z)
 /// <returns>Vector2 object</returns>
 Vector2 Vector3::orthographic_project() const
 {
-	float fov_factor = 128; //duck 8
+	float fov_factor = 1; //duck 8
 	Vector3 const& original_vector = *this;
 	Vector2 projection_vector = { fov_factor * original_vector.x, fov_factor * original_vector.y };
 	return projection_vector;

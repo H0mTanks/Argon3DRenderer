@@ -62,7 +62,7 @@ Matrix4 Matrix4::make_rotation_z(float angle)
     return id;
 }
 
-Matrix4 Matrix4::make_rotation_y(float angle)
+Matrix4 Matrix4::make_rotation_x(float angle)
 {
     float c = cos(angle);
     float s = sin(angle);
@@ -76,7 +76,7 @@ Matrix4 Matrix4::make_rotation_y(float angle)
     return id;
 }
 
-Matrix4 Matrix4::make_rotation_x(float angle)
+Matrix4 Matrix4::make_rotation_y(float angle)
 {
     float c = cos(angle);
     float s = sin(angle);
@@ -101,6 +101,31 @@ Matrix4 Matrix4::make_world(Matrix4 const& scale, Matrix4 const& rotation_x, Mat
     world_matrix = translation.mul_matrix(world_matrix);
 
     return world_matrix;
+}
+
+Matrix4 Matrix4::make_perspective(float fov, float aspect, float znear, float zfar)
+{
+    Matrix4 m;
+    m.m[0][0] = aspect * (1 / tan(fov / 2));
+    m.m[1][1] = 1 / tan(fov / 2);
+    m.m[2][2] = zfar / (zfar - znear);
+    m.m[2][3] = (-zfar * znear) / (zfar - znear);
+    m.m[3][2] = 1.0;
+
+    return m;
+}
+
+Vector4 Matrix4::mul_project(Vector4 const& v) const
+{
+    Matrix4 const& projection_matrix = *this;
+    Vector4 result = projection_matrix.mul_vector(v);
+
+    if (result.w != 0.0f) {
+        result.x /= result.w;
+        result.y /= result.w;
+        result.z /= result.w;
+    }
+    return result;
 }
 
 Vector4 Matrix4::mul_vector(Vector4 const& v) const

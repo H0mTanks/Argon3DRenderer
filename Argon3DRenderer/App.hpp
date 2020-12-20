@@ -13,7 +13,7 @@ public:
 	static int WINDOW_HEIGHT;
 	static SDL_Renderer* renderer;
 	static SDL_Texture* display_buffer_texture;
-	static uint32_t* display_buffer;
+	static Color* display_buffer;
 	Draw::Render_type render_type = Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME;
 	Draw::Cull_type cull_type = Draw::Cull_type::CULL_BACKFACE;
 	bool is_running = false;

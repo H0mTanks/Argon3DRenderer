@@ -97,23 +97,23 @@ Vector3 cube_vertices[N_CUBE_VERTICES] = {
 
 Face cube_faces[N_CUBE_FACES] = {
     // front
-    {1, 2, 3, 0xFF0000FF },
-    {1, 3, 4, 0xFF0000FF },
+    {1, 2, 3, 0xFFFFFFFF },
+    {1, 3, 4, 0xFFFFFFFF },
     // right
-    {4, 3, 5, 0x00FF00FF },
-    {4, 5, 6, 0x00FF00FF },
+    {4, 3, 5, 0xFFFFFFFF },
+    {4, 5, 6, 0xFFFFFFFF },
     // back
-    {6, 5, 7, 0x0000FFFF },
-    {6, 7, 8, 0x0000FFFF },
+    {6, 5, 7, 0xFFFFFFFF },
+    {6, 7, 8, 0xFFFFFFFF },
     // left
-    {8, 7, 2, 0xFFFF00FF },
-    {8, 2, 1, 0xFFFF00FF },
+    {8, 7, 2, 0xFFFFFFFF },
+    {8, 2, 1, 0xFFFFFFFF },
     // top
-    {2, 7, 5, 0xFF00FFFF },
-    {2, 5, 3, 0xFF00FFFF },
+    {2, 7, 5, 0xFFFFFFFF },
+    {2, 5, 3, 0xFFFFFFFF },
     // bottom
-    {6, 8, 1, 0x00FFFFFF },
-    {6, 1, 4, 0x00FFFFFF }
+    {6, 8, 1, 0xFFFFFFFF },
+    {6, 1, 4, 0xFFFFFFFF }
 };
 
 void Mesh::load_cube_mesh_data()

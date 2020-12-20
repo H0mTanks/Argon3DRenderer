@@ -1,20 +1,23 @@
 #pragma once
 #include <array>
 #include "Vector.hpp"
+#include "Color.hpp"
+
 
 
 class Face
 {
 public:
 	int a, b, c;
-	uint32_t color;
+	Color color = 0xFFFFFFFF;
+public:
 };
 
 class Triangle2
 {
 public:
 	std::array<Vector2, 3> points;
-	uint32_t color = 0x00000000;
+	Color color = 0xFFFFFFFF;
 	float depth = 0;
 	bool operator<(Triangle2 const& t) const;
 	bool operator>(Triangle2 const& t) const;
@@ -28,6 +31,7 @@ public:
 public:
 	Triangle3();
 	Triangle3(Vector3 a, Vector3 b, Vector3 c);
+	float normal_deviation(Vector3 const& v);
 	bool backface(Vector3 const& camera_position) const;
 };
 

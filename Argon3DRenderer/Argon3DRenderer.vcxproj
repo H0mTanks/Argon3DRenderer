@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Draw.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -29,7 +30,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.hpp" />
+    <ClInclude Include="Color.hpp" />
     <ClInclude Include="Draw.hpp" />
+    <ClInclude Include="Light.hpp" />
     <ClInclude Include="Matrix.hpp" />
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="Triangle.hpp" />

@@ -6,19 +6,23 @@
 #include "Vector.hpp"
 #include "Mesh.hpp"
 #include "Matrix.hpp"
-
+#include "Color.hpp"
+#include "Light.hpp"
 
 Vector3 camera_position = Vector3(0, 0, 0);
 std::vector<Triangle2> triangles_to_render;
 
 Mesh mesh;
+Light global_light;
+
+Matrix4 projection_matrix;
 
 int App::WINDOW_WIDTH = 800;
 int App::WINDOW_HEIGHT = 600;
 
 SDL_Renderer* App::renderer = nullptr;
 SDL_Texture* App::display_buffer_texture = nullptr;
-uint32_t* App::display_buffer = nullptr;
+Color* App::display_buffer = nullptr;
 
 
 
@@ -104,12 +108,13 @@ void App::process_input()
 void App::update()
 {
 
-	mesh.rotation.x += 0.01f/*3.14159265f * 0.5*/;
-	mesh.rotation.y += 0.01f;
-	mesh.rotation.z += 0.01f;
+	mesh.rotation.x = 3.14159265f * 0.5;
+	mesh.rotation.y += 0.005f;
+	mesh.rotation.z += 0.00f;
 
-	//mesh.scale.x += 0.002f;
-	//mesh.scale.y += 0.001f;
+	mesh.scale.x = 0.05;
+	mesh.scale.y = 0.05;
+	mesh.scale.z = 0.05;
 
 	//mesh.translation.x += 0.01f;
 	mesh.translation.z = 5.0f;
@@ -148,17 +153,23 @@ void App::update()
 			}
 		}
 
+
 		float avg_depth = (transformed_triangle.points[0].z + transformed_triangle.points[1].z + transformed_triangle.points[2].z) / 3.0f;
 
-
 		for (int j = 0; j < 3; j++) {
-			Vector2 projected_point = transformed_triangle.points[j].perspective_project();
+			Vector4 projected_point = projection_matrix.mul_project(transformed_triangle.points[j].to_vec4());
 
+			projected_point.x *= WINDOW_WIDTH * 0.5;
+			projected_point.y *= WINDOW_HEIGHT * 0.5;
 			projected_point.x += WINDOW_WIDTH * 0.5;
-			projected_point.y += WINDOW_HEIGHT * 0.5;
-			projected_triangle.points[j] = projected_point;
+			projected_point.y += WINDOW_HEIGHT * 0.75;
+
+
+			projected_triangle.points[j] = projected_point.to_vec3().orthographic_project();
 		}
-		projected_triangle.color = mesh_face.color;
+
+		/*float light_factor = -transformed_triangle.normal_deviation(global_light.direction);*/
+		projected_triangle.color = 0xFFFFFFFF;/*global_light.intensity(mesh_face.color, light_factor);*/
 		projected_triangle.depth = avg_depth;
 		triangles_to_render.push_back(projected_triangle);
 		/*std::cout << "rendering " << count << '\n';
@@ -225,8 +236,8 @@ void App::render()
 void App::setup_display()
 {
 
-	display_buffer = static_cast<uint32_t*> (new uint32_t[WINDOW_WIDTH * WINDOW_HEIGHT]);
-	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32_t));
+	display_buffer = static_cast<Color*> (new Color[WINDOW_WIDTH * WINDOW_HEIGHT]);
+	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(Color));
 
 	if (!display_buffer) {
 		std::cout << "Could not allocate memory for buffer";
@@ -234,10 +245,17 @@ void App::setup_display()
 
 	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	/*if (!mesh.load_obj_mesh_data("./assets/duck2.obj")) {
+	if (!mesh.load_obj_mesh_data("./assets/duck2.obj")) {
 		quit();
 		return;
-	}*/
+	}
+
+	float fov = 60 * M_PI / 180;
+	float aspect = (float)WINDOW_HEIGHT / (float)WINDOW_WIDTH;
+	float znear = 0.1f;
+	float zfar = 100.0f;
+	projection_matrix = Matrix4::make_perspective(fov, aspect, znear, zfar);
+
 
 	mesh.load_cube_mesh_data();
 
@@ -248,7 +266,7 @@ void App::setup_display()
 
 void App::clear_display_buffer()
 {
-	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32_t));
+	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(Color));
 }
 
 
@@ -270,6 +288,6 @@ void App::destroy()
 
 void App::render_display_buffer()
 {
-	SDL_UpdateTexture(display_buffer_texture, NULL, display_buffer, WINDOW_WIDTH * sizeof(uint32_t));
+	SDL_UpdateTexture(display_buffer_texture, NULL, display_buffer, WINDOW_WIDTH * sizeof(Color));
 	SDL_RenderCopy(renderer, display_buffer_texture, NULL, NULL);
 }

@@ -42,3 +42,19 @@ Triangle3 Triangle4::to_triangle3()
 {
 	return Triangle3(points[0].to_vec3(), points[1].to_vec3(), points[2].to_vec3());
 }
+
+float Triangle3::normal_deviation(Vector3 const& v)
+{
+	Vector3 const& a = (*this).points[0];
+	Vector3 const& b = (*this).points[1];
+	Vector3 const& c = (*this).points[2];
+
+	Vector3 ab = b.sub(a);
+	Vector3 ac = c.sub(a);
+	/*ab = ab.normalize();
+	ac = ac.normalize();*/
+
+	Vector3 normal = ab.cross(ac); //v1 x v2
+	normal = normal.normalize();
+	return normal.dot(v);
+}
