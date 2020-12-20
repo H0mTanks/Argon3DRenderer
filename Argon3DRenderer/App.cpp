@@ -145,6 +145,7 @@ void App::update()
 
 			transformed_triangle.points[j] = transformed_vertex.to_vec3();
 		}
+		transformed_triangle.compute_face_normal();
 
 
 		if (cull_type == Draw::Cull_type::CULL_BACKFACE) {
@@ -168,14 +169,12 @@ void App::update()
 			projected_triangle.points[j] = projected_point.to_vec3().orthographic_project();
 		}
 
-		/*float light_factor = -transformed_triangle.normal_deviation(global_light.direction);*/
-		projected_triangle.color = 0xFFFFFFFF;/*global_light.intensity(mesh_face.color, light_factor);*/
+		float light_factor = -transformed_triangle.normal_deviation(global_light.direction);
+		projected_triangle.color = global_light.intensity(mesh_face.color, light_factor);
 		projected_triangle.depth = avg_depth;
 		triangles_to_render.push_back(projected_triangle);
-		/*std::cout << "rendering " << count << '\n';
-		count++;*/
 
-		std::stable_sort(triangles_to_render.begin(), triangles_to_render.end(), std::greater<Triangle2>());
+		//std::stable_sort(triangles_to_render.begin(), triangles_to_render.end(), std::greater<Triangle2>());
 	}
 
 }

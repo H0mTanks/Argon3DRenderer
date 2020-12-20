@@ -9,23 +9,40 @@ Triangle3::Triangle3(Vector3 a, Vector3 b, Vector3 c)
 	points = { a, b, c };
 }
 
-bool Triangle3::backface(Vector3 const& camera_position) const
+void Triangle3::compute_face_normal() const
 {
-	Vector3 const& a = (*this).points[0];
-	Vector3 const& b = (*this).points[1];
-	Vector3 const& c = (*this).points[2];
+	Triangle3 const& t = *this;
+	Vector3 const& a = t.points[0];
+	Vector3 const& b = t.points[1];
+	Vector3 const& c = t.points[2];
 
 	Vector3 ab = b.sub(a);
 	Vector3 ac = c.sub(a);
 	//ab = ab.normalize();
 	//ac = ac.normalize();
 
-	Vector3 normal = ab.cross(ac); //v1 x v2
+	t.face_normal = ab.cross(ac); //v1 x v2
+	t.face_normal = t.face_normal.normalize();
+}
+
+bool Triangle3::backface(Vector3 const& camera_position) const
+{
+	Triangle3 const& t = *this;
+	Vector3 const& a = t.points[0];
+	//Vector3 const& b = (*this).points[1];
+	//Vector3 const& c = (*this).points[2];
+
+	//Vector3 ab = b.sub(a);
+	//Vector3 ac = c.sub(a);
+	////ab = ab.normalize();
+	////ac = ac.normalize();
+
+	//Vector3 normal = ab.cross(ac); //v1 x v2
 	//normal = normal.normalize();
 
 	Vector3 camera_ray = camera_position.sub(a);
 
-	return normal.dot(camera_ray) < 0;
+	return face_normal.dot(camera_ray) < 0;
 }
 
 bool Triangle2::operator<(Triangle2 const& t) const
@@ -45,16 +62,16 @@ Triangle3 Triangle4::to_triangle3()
 
 float Triangle3::normal_deviation(Vector3 const& v)
 {
-	Vector3 const& a = (*this).points[0];
-	Vector3 const& b = (*this).points[1];
-	Vector3 const& c = (*this).points[2];
+	//Vector3 const& a = (*this).points[0];
+	//Vector3 const& b = (*this).points[1];
+	//Vector3 const& c = (*this).points[2];
 
-	Vector3 ab = b.sub(a);
-	Vector3 ac = c.sub(a);
-	/*ab = ab.normalize();
-	ac = ac.normalize();*/
+	//Vector3 ab = b.sub(a);
+	//Vector3 ac = c.sub(a);
+	///*ab = ab.normalize();
+	//ac = ac.normalize();*/
 
-	Vector3 normal = ab.cross(ac); //v1 x v2
-	normal = normal.normalize();
-	return normal.dot(v);
+	//Vector3 normal = ab.cross(ac); //v1 x v2
+	//normal = normal.normalize();
+	return this->face_normal.dot(v);
 }

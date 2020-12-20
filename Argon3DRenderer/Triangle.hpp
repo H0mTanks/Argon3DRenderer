@@ -28,9 +28,11 @@ class Triangle3
 {
 public:
 	std::array<Vector3, 3> points;
+	mutable Vector3 face_normal = { 0,0,0 };
 public:
 	Triangle3();
 	Triangle3(Vector3 a, Vector3 b, Vector3 c);
+	void compute_face_normal() const;
 	float normal_deviation(Vector3 const& v);
 	bool backface(Vector3 const& camera_position) const;
 };
