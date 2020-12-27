@@ -1,6 +1,4 @@
 #pragma once
-
-#include <vector>
 #include "Vector.hpp"
 #include "Triangle.hpp"
 

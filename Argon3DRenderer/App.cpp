@@ -1,13 +1,11 @@
-#include <iostream>
-#include <algorithm>
-#include <functional>
-#include <vector>
+#include "PrecompiledHeaders.hpp"
 #include "App.hpp"
 #include "Vector.hpp"
 #include "Mesh.hpp"
 #include "Matrix.hpp"
 #include "Color.hpp"
 #include "Light.hpp"
+#include "Profiler.hpp"
 
 Vector3 camera_position = Vector3(0, 0, 0);
 std::vector<Triangle2> triangles_to_render;
@@ -51,7 +49,7 @@ App::App()
 		return;
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+	renderer = SDL_CreateRenderer(window, -1, 0/*SDL_RENDERER_PRESENTVSYNC*/);
 	if (!renderer) {
 		std::cerr << "Error creating SDL_Renderer" << '\n';
 		return;
@@ -107,14 +105,15 @@ void App::process_input()
 // Updates each frame
 void App::update()
 {
+	PROFILE_FUNCTION();
 
-	mesh.rotation.x = 3.14159265f * 0.5;
-	mesh.rotation.y += 0.005f;
-	mesh.rotation.z += 0.00f;
+	mesh.rotation.x += 0.00f;
+	mesh.rotation.y += 0.00f;
+	mesh.rotation.z += 0.01f;
 
-	mesh.scale.x = 0.05;
-	mesh.scale.y = 0.05;
-	mesh.scale.z = 0.05;
+	mesh.scale.x = 0.5;
+	mesh.scale.y = 0.5;
+	mesh.scale.z = 0.5;
 
 	//mesh.translation.x += 0.01f;
 	mesh.translation.z = 5.0f;
@@ -162,6 +161,9 @@ void App::update()
 
 			projected_point.x *= WINDOW_WIDTH * 0.5;
 			projected_point.y *= WINDOW_HEIGHT * 0.5;
+
+			projected_point.y *= -1;
+
 			projected_point.x += WINDOW_WIDTH * 0.5;
 			projected_point.y += WINDOW_HEIGHT * 0.75;
 
@@ -183,6 +185,8 @@ void App::update()
 // Renders the current display buffer
 void App::render()
 {
+	PROFILE_FUNCTION();
+
 	Draw::grid();
 
 	int trianglesize = triangles_to_render.size();
@@ -244,12 +248,12 @@ void App::setup_display()
 
 	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	if (!mesh.load_obj_mesh_data("./assets/duck2.obj")) {
+	if (!mesh.load_obj_mesh_data("./assets/f22.obj")) {
 		quit();
 		return;
 	}
 
-	float fov = 60 * M_PI / 180;
+	constexpr float fov = 60 * M_PI / 180;
 	float aspect = (float)WINDOW_HEIGHT / (float)WINDOW_WIDTH;
 	float znear = 0.1f;
 	float zfar = 100.0f;

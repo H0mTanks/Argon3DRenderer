@@ -1,5 +1,4 @@
 #pragma once
-#include <array>
 #include "Vector.hpp"
 
 class Matrix4

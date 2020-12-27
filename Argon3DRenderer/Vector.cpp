@@ -1,4 +1,4 @@
-#include <cmath>
+#include "PrecompiledHeaders.hpp"
 #include "Vector.hpp"
 
 Vector2::Vector2()

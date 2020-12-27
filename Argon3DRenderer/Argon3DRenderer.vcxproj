@@ -22,9 +22,12 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Draw.cpp" />
     <ClCompile Include="Light.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="PrecompiledHeaders.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
@@ -35,6 +38,8 @@
     <ClInclude Include="Light.hpp" />
     <ClInclude Include="Matrix.hpp" />
     <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="PrecompiledHeaders.hpp" />
+    <ClInclude Include="Profiler.hpp" />
     <ClInclude Include="Triangle.hpp" />
     <ClInclude Include="Vector.hpp" />
   </ItemGroup>
@@ -156,6 +161,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PrecompiledHeaders.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

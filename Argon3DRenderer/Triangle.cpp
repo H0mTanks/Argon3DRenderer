@@ -1,3 +1,4 @@
+#include "PrecompiledHeaders.hpp"
 #include "Triangle.hpp"
 
 Triangle3::Triangle3()

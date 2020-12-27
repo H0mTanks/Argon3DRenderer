@@ -1,6 +1,4 @@
-#include <fstream>
-#include <string>
-#include <cstdio>
+#include "PrecompiledHeaders.hpp"
 #include "Mesh.hpp"
 
 

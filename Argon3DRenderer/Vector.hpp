@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 
 // Struct for holding a 2-Dimensional Vector
 struct Vector2

@@ -1,3 +1,4 @@
+#include "PrecompiledHeaders.hpp"
 #include "Light.hpp"
 
 Light::Light()
