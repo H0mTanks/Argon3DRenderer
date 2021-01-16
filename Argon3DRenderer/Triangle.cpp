@@ -51,6 +51,19 @@ bool Triangle2::operator<(Triangle2 const& t) const
 	return depth < t.depth;
 }
 
+Triangle2::Triangle2()
+{
+}
+
+
+Triangle2::Triangle2(Vector2 a, Vector2 b, Vector2 c, Color color, float depth)
+{
+	points = { a, b, c};
+	this->color = color;
+	this->depth = depth;
+}
+
+
 bool Triangle2::operator>(Triangle2 const& t) const
 {
 	return depth > t.depth;
@@ -59,6 +72,11 @@ bool Triangle2::operator>(Triangle2 const& t) const
 Triangle3 Triangle4::to_triangle3()
 {
 	return Triangle3(points[0].to_vec3(), points[1].to_vec3(), points[2].to_vec3());
+}
+
+Triangle2 Triangle4::to_triangle2()
+{
+	return Triangle2(points[0].to_vec2(), points[1].to_vec2(), points[2].to_vec2(), color, depth);
 }
 
 float Triangle3::normal_deviation(Vector3 const& v)

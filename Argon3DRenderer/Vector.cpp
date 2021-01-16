@@ -247,3 +247,22 @@ Vector3 Vector4::to_vec3()
 	Vector4 const& v4 = *this;
 	return Vector3(v4.x, v4.y, v4.z);
 }
+
+Vector2 Vector4::to_vec2()
+{
+	Vector4 const& v4 = *this;
+	return Vector2(v4.x, v4.y);
+}
+
+Vector4_int::Vector4_int()
+{
+}
+
+Vector4_int::Vector4_int(int x, int y, float z, float w) : x(x), y(y), z(z), w(w)
+{
+}
+
+Vector2_int Vector4_int::to_vec2_int() const
+{
+	return Vector2_int(x, y);
+}

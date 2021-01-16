@@ -81,4 +81,20 @@ public:
 	Vector4();
 	Vector4(float x, float y, float z, float w);
 	Vector3 to_vec3();
+	Vector2 to_vec2();
+};
+
+struct Vector4_int
+{
+	int x = 0;
+	int y = 0;
+	float z = 0;
+	float w = 0;
+
+public:
+	Vector4_int();
+	Vector4_int(int x, int y, float z, float w);
+	Vector2_int to_vec2_int() const;
+
+	/*Vector4_int sub(Vector4_int const& v2) const;*/
 };

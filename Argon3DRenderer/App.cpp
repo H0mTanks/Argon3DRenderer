@@ -13,7 +13,7 @@
 #include "Profiler.hpp"
 
 Vector3 camera_position = Vector3(0, 0, 0);
-std::vector<Triangle2> triangles_to_render;
+std::vector<Triangle4> triangles_to_render;
 
 Mesh mesh;
 Light global_light;
@@ -54,7 +54,7 @@ App::App()
 		return;
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, 0/*SDL_RENDERER_PRESENTVSYNC*/);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 	if (!renderer) {
 		std::cerr << "Error creating SDL_Renderer" << '\n';
 		return;
@@ -136,9 +136,9 @@ void App::update()
 	Matrix4 rotation_matrix_y = Matrix4::make_rotation_y(mesh.rotation.y);
 	Matrix4 rotation_matrix_z = Matrix4::make_rotation_z(mesh.rotation.z);
 
-
-	Triangle3 transformed_triangle;
-	Triangle2 projected_triangle;
+	Triangle3 transformed_triangle3;
+	Triangle4 transformed_triangle;
+	Triangle4 projected_triangle;
 
 	for (int i = 0; i < mesh.faces.size(); i++) {
 		Face& mesh_face = mesh.faces[i];
@@ -152,15 +152,17 @@ void App::update()
 			Vector4 transformed_vertex = face_vertices[j].to_vec4();
 			Matrix4 world_matrix = Matrix4::make_world(scale_matrix, rotation_matrix_x, 
 				rotation_matrix_y, rotation_matrix_z, translation_matrix);
+
 			transformed_vertex = world_matrix.mul_vector(transformed_vertex);
 
-			transformed_triangle.points[j] = transformed_vertex.to_vec3();
+			transformed_triangle.points[j] = transformed_vertex;
 		}
-		transformed_triangle.compute_face_normal();
+		transformed_triangle3 = transformed_triangle.to_triangle3();
+		transformed_triangle3.compute_face_normal();
 
 
 		if (cull_type == Draw::Cull_type::CULL_BACKFACE) {
-			if (transformed_triangle.backface(camera_position)) {
+			if (transformed_triangle3.backface(camera_position)) {
 				continue;
 			}
 		}
@@ -169,21 +171,20 @@ void App::update()
 		float avg_depth = (transformed_triangle.points[0].z + transformed_triangle.points[1].z + transformed_triangle.points[2].z) / 3.0f;
 
 		for (int j = 0; j < 3; j++) {
-			Vector4 projected_point = projection_matrix.mul_project(transformed_triangle.points[j].to_vec4());
+			Vector4 projected_point = projection_matrix.mul_project(transformed_triangle.points[j]);
+
+			projected_point.y *= -1;
 
 			projected_point.x *= WINDOW_WIDTH * 0.5f;
 			projected_point.y *= WINDOW_HEIGHT * 0.5f;
 
-			projected_point.y *= -1;
-
 			projected_point.x += WINDOW_WIDTH * 0.5f;
 			projected_point.y += WINDOW_HEIGHT * 0.5f;
 
-
-			projected_triangle.points[j] = projected_point.to_vec3().orthographic_project();
+			projected_triangle.points[j] = projected_point;
 		}
 
-		float light_factor = -transformed_triangle.normal_deviation(global_light.direction);
+		float light_factor = -transformed_triangle3.normal_deviation(global_light.direction);
 		projected_triangle.tex_coords = { mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv };
 		projected_triangle.color = global_light.intensity(mesh_face.color, light_factor);
 		projected_triangle.depth = avg_depth;
@@ -204,7 +205,9 @@ void App::render()
 
 	int trianglesize = triangles_to_render.size();
 	for (int i = 0; i < trianglesize; i++) {
-		Triangle2 triangle = triangles_to_render[i];
+		Triangle4 triangle4 = triangles_to_render[i];
+		Triangle2 triangle = triangle4.to_triangle2();
+
 		if (render_type == Draw::Render_type::RENDER_FILL_TRIANGLE || render_type == Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME) {
 			Draw::fill_triangle(triangle, triangle.color);
 		}
@@ -215,7 +218,7 @@ void App::render()
 		}
 
 		if (render_type == Draw::Render_type::RENDER_TEXTURED || render_type == Draw::Render_type::RENDER_TEXTURED_WIRE) {
-			Draw::textured_triangle(triangle, mesh_texture);
+			Draw::textured_triangle(triangle4, mesh_texture);
 		}
 
 		if (render_type == Draw::Render_type::RENDER_WIREFRAME_VERTEX) {

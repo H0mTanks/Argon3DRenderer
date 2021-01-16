@@ -160,11 +160,11 @@ void Draw::fill_top_triangle(int bx, int by, int mx, int my, int cx, int cy, Col
 	}
 }
 
-void Draw::textured_triangle(Triangle2 const& triangle, Color* texture)
+void Draw::textured_triangle(Triangle4 const& triangle, Color* texture)
 {
-	Vector2_int a(triangle.points[0].x, triangle.points[0].y);
-	Vector2_int b(triangle.points[1].x, triangle.points[1].y);
-	Vector2_int c(triangle.points[2].x, triangle.points[2].y);
+	Vector4_int a(triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w);
+	Vector4_int b(triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w);
+	Vector4_int c(triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w);
 	Texture2 a_uv = triangle.tex_coords[0];
 	Texture2 b_uv = triangle.tex_coords[1];
 	Texture2 c_uv = triangle.tex_coords[2];
@@ -216,7 +216,7 @@ void Draw::textured_triangle(Triangle2 const& triangle, Color* texture)
 }
 
 
-void Draw::textured_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& c, Vector2_int const& m,
+void Draw::textured_bottom_triangle(Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, Vector2_int const& m,
 	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, Color* texture)
 {
 	float slope_ab = (float)(a.x - b.x) / (a.y - b.y);
@@ -253,7 +253,7 @@ void Draw::textured_bottom_triangle(Vector2_int const& a, Vector2_int const& b, 
 }
 
 
-void Draw::textured_top_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& c, Vector2_int const& m,
+void Draw::textured_top_triangle(Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, Vector2_int const& m,
 	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, Color* texture)
 {
 	float slope_cb = (float)(c.x - b.x) / (c.y - b.y);
@@ -359,18 +359,31 @@ void Draw::pixel(const int x, const int y, const Color color)
 }
 
 
-void Draw::texel(const int x, const int y, Vector2_int const& a, Vector2_int const& b, Vector2_int const& c, 
+void Draw::texel(const int x, const int y, Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, 
 	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, const Color* texture)
 {
 	Vector2_int p(x, y);
-	Vector3 weights = Vector3::barycentric_weights(a, b, c, p);
+	Vector3 weights = Vector3::barycentric_weights(a.to_vec2_int(), b.to_vec2_int(), c.to_vec2_int(), p);
 
 	float alpha = weights.x;
 	float beta = weights.y;
 	float gamma = weights.z;
 
-	float interpolated_u = a_uv.u * alpha + b_uv.u * beta + c_uv.u * gamma;
-	float interpolated_v = a_uv.v * alpha + b_uv.v * beta + c_uv.v * gamma;
+
+	/*float interpolated_u = (a_uv.u / a.w) * alpha + (b_uv.u / b.w) * beta + (c_uv.u / c.w) * gamma;
+	float interpolated_v = (a_uv.v / a.w) * alpha + (b_uv.v / b.w) * beta + (c_uv.v / c.w) * gamma;
+
+	float interpolated_reciprocal_w = (1 / a.w) * alpha + (1 / b.w) * beta + (1 / c.w) * gamma;
+
+	interpolated_u /= interpolated_reciprocal_w;
+	interpolated_v /= interpolated_reciprocal_w;*/
+
+	float A = alpha * b.w * c.w;
+	float B = beta * a.w * c.w;
+	float C = gamma * a.w * b.w;
+
+	float interpolated_u = (a_uv.u * A + b_uv.u * B + c_uv.u * C) / (A + B + C);
+	float interpolated_v = (a_uv.v * A + b_uv.v * B + c_uv.v * C) / (A + B + C);
 
 	int tex_x = abs(static_cast<int>(interpolated_u * texture_width));
 	int tex_y = abs(static_cast<int>(interpolated_v * texture_height));

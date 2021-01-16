@@ -30,6 +30,7 @@
     </ClCompile>
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="upng.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +44,7 @@
     <ClInclude Include="Profiler.hpp" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Triangle.hpp" />
+    <ClInclude Include="upng.h" />
     <ClInclude Include="Vector.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
