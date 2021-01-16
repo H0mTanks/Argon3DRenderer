@@ -2,6 +2,8 @@
 #include "App.hpp"
 #include "Draw.hpp"
 
+
+
 void Draw::rectangle(const int x, const int y, const int width, const int height, const Color color)
 {
 	for (int j = y; j < y + height; j++) {
@@ -51,6 +53,45 @@ void Draw::fill_triangle(Triangle2 const& triangle, Color color)
 }
 
 
+void Draw::fill_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& m, Color color)
+{
+	
+	float slope_ab = (float)(a.x - b.x) / (a.y - b.y);
+	float slope_am = (float)(a.x - m.x) / (a.y - m.y);
+
+	float x_start = a.x;
+	float x_end = a.x;
+
+	
+	for (int y = a.y; y <= b.y; y++) {
+
+		line(x_start, y, x_end, y, color);
+
+		x_start += slope_ab;
+		x_end += slope_am;
+	}
+}
+
+
+void Draw::fill_top_triangle(Vector2_int const& b, Vector2_int const& m, Vector2_int const& c, Color color)
+{
+	float slope_cb = (float)(c.x - b.x) / (c.y - b.y);
+	float slope_cm = (float)(c.x - m.x) / (c.y - m.y);
+
+	float x_start = c.x;
+	float x_end = c.x;
+
+	
+	for (int y = c.y; y >= b.y; y--) {
+
+		line(x_start, y, x_end, y, color);
+
+		x_start -= slope_cb;
+		x_end -= slope_cm;
+	}
+}
+
+
 void Draw::fill_triangle(int ax, int ay, int bx, int by, int cx, int cy, Color color)
 {
 	if (ay == by && ay == cy) { //protect against degenerate triangles to avoid divisions by zero later
@@ -82,25 +123,6 @@ void Draw::fill_triangle(int ax, int ay, int bx, int by, int cx, int cy, Color c
 }
 
 
-void Draw::fill_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& m, Color color)
-{
-	
-	float slope_ab = (float)(a.x - b.x) / (a.y - b.y);
-	float slope_am = (float)(a.x - m.x) / (a.y - m.y);
-
-	float x_start = a.x;
-	float x_end = a.x;
-
-	
-	for (int y = a.y; y <= b.y; y++) {
-
-		line(x_start, y, x_end, y, color);
-
-		x_start += slope_ab;
-		x_end += slope_am;
-	}
-}
-
 void Draw::fill_bottom_triangle(int ax, int ay, int bx, int by, int mx, int my, Color color)
 {
 	float slope_ab = (float)(ax - bx) / (ay - by);
@@ -120,24 +142,6 @@ void Draw::fill_bottom_triangle(int ax, int ay, int bx, int by, int mx, int my, 
 }
 
 
-void Draw::fill_top_triangle(Vector2_int const& b, Vector2_int const& m, Vector2_int const& c, Color color)
-{
-	float slope_cb = (float)(c.x - b.x) / (c.y - b.y);
-	float slope_cm = (float)(c.x - m.x) / (c.y - m.y);
-
-	float x_start = c.x;
-	float x_end = c.x;
-
-	
-	for (int y = c.y; y >= b.y; y--) {
-
-		line(x_start, y, x_end, y, color);
-
-		x_start -= slope_cb;
-		x_end -= slope_cm;
-	}
-}
-
 void Draw::fill_top_triangle(int bx, int by, int mx, int my, int cx, int cy, Color color)
 {
 	float slope_cb = (float)(cx - bx) / (cy - by);
@@ -150,6 +154,129 @@ void Draw::fill_top_triangle(int bx, int by, int mx, int my, int cx, int cy, Col
 	for (int y = cy; y >= by; y--) {
 
 		line(x_start, y, x_end, y, color);
+
+		x_start -= slope_cb;
+		x_end -= slope_cm;
+	}
+}
+
+void Draw::textured_triangle(Triangle2 const& triangle, Color* texture)
+{
+	Vector2_int a(triangle.points[0].x, triangle.points[0].y);
+	Vector2_int b(triangle.points[1].x, triangle.points[1].y);
+	Vector2_int c(triangle.points[2].x, triangle.points[2].y);
+	Texture2 a_uv = triangle.tex_coords[0];
+	Texture2 b_uv = triangle.tex_coords[1];
+	Texture2 c_uv = triangle.tex_coords[2];
+
+
+	if (a.y == b.y && a.y == c.y) { //protect against degenerate triangles to avoid divisions by zero later
+		return;
+	}
+	if (a.y > b.y) {
+		std::swap(a, b);
+		std::swap(a_uv, b_uv);
+	}
+
+	if (b.y > c.y) {
+		std::swap(b, c);
+		std::swap(b_uv, c_uv);
+	}
+
+	if (a.y > b.y) {
+		std::swap(a, b);
+		std::swap(a_uv, b_uv);
+	}
+
+
+	Vector2_int m(((c.x - a.x) * (b.y - a.y)) / (c.y - a.y) + a.x, b.y);
+
+	textured_bottom_triangle(a, b, c, m, a_uv, b_uv, c_uv, texture);
+
+	textured_top_triangle(a, b, c, m, a_uv, b_uv, c_uv, texture);
+
+	/*float inv_slope_1 = 0;
+	float inv_slope_2 = 0;
+
+	inv_slope_1 = (float)(b.x - a.x) / abs(b.y - a.y);
+	inv_slope_2 = (float)(c.x - a.x) / abs(c.y - a.y);
+
+	for (int y = a.y; y <= b.y; y++) {
+		int x_start = b.x + (y - b.y) * inv_slope_1;
+		int x_end = a.x + (y - a.y) * inv_slope_2;
+
+		if (x_end < x_start) {
+			std::swap(x_end, x_start);
+		}
+
+		for (int x = x_start; x < x_end; x++) {
+			pixel(x, y, 0xFF00FFFF);
+		}
+	}*/
+}
+
+
+void Draw::textured_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& c, Vector2_int const& m,
+	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, Color* texture)
+{
+	float slope_ab = (float)(a.x - b.x) / (a.y - b.y);
+	float slope_am = (float)(a.x - m.x) / (a.y - m.y);
+
+	float x_start = a.x;
+	float x_end = a.x;
+
+
+	for (int y = a.y; y <= b.y; y++) {
+
+		//line(x_start, y, x_end, y, color);
+
+		/*int x_start = b.x + (y - b.y) * slope_ab;
+		int x_end = a.x + (y - a.y) * slope_am;*/
+
+		if (x_start <= x_end) {
+			for (int x = x_start; x <= x_end; x++) {
+				//pixel(x, y, (x % 2 == 0 && y % 2 == 0) ? 0xFF00FFFF : 0x000000FF);
+				texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
+			}
+		}
+		else {
+			for (int x = x_end; x <= x_start; x++) {
+				//pixel(x, y, (x % 2 == 0 && y % 2 == 0) ? 0xFF00FFFF : 0x000000FF);
+				texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
+			}
+		}
+
+
+		x_start += slope_ab;
+		x_end += slope_am;
+	}
+}
+
+
+void Draw::textured_top_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& c, Vector2_int const& m,
+	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, Color* texture)
+{
+	float slope_cb = (float)(c.x - b.x) / (c.y - b.y);
+	float slope_cm = (float)(c.x - m.x) / (c.y - m.y);
+
+	float x_start = c.x;
+	float x_end = c.x;
+
+
+	for (int y = c.y; y >= b.y; y--) {
+
+		if (x_start <= x_end) {
+			for (int x = x_start; x <= x_end; x++) {
+				//pixel(x, y, (x % 2 == 0 && y % 2 == 0) ? 0xFF00FFFF : 0x000000FF);
+				texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
+			}
+		}
+		else {
+			for (int x = x_end; x <= x_start; x++) {
+				//pixel(x, y, (x % 2 == 0 && y % 2 == 0) ? 0xFF00FFFF : 0x000000FF);
+				texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
+			}
+		}
 
 		x_start -= slope_cb;
 		x_end -= slope_cm;
@@ -224,12 +351,31 @@ void Draw::line(int x0, int y0, int x1, int y1, Color color)
 }
 
 
-
 void Draw::pixel(const int x, const int y, const Color color)
 {
 	if (x < App::WINDOW_WIDTH && y < App::WINDOW_HEIGHT && x >= 0 && y >= 0) {
 		App::display_buffer[App::WINDOW_WIDTH * y + x] = color;
 	}
+}
+
+
+void Draw::texel(const int x, const int y, Vector2_int const& a, Vector2_int const& b, Vector2_int const& c, 
+	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, const Color* texture)
+{
+	Vector2_int p(x, y);
+	Vector3 weights = Vector3::barycentric_weights(a, b, c, p);
+
+	float alpha = weights.x;
+	float beta = weights.y;
+	float gamma = weights.z;
+
+	float interpolated_u = a_uv.u * alpha + b_uv.u * beta + c_uv.u * gamma;
+	float interpolated_v = a_uv.v * alpha + b_uv.v * beta + c_uv.v * gamma;
+
+	int tex_x = abs(static_cast<int>(interpolated_u * texture_width));
+	int tex_y = abs(static_cast<int>(interpolated_v * texture_height));
+
+	pixel(x, y, texture[(tex_y * texture_width + tex_x) % 4096]);
 }
 
 //Draws a dark grey grid of 30 pixel boxes

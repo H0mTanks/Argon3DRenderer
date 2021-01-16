@@ -1,13 +1,13 @@
 #pragma once
 #include "Vector.hpp"
 #include "Color.hpp"
-
-
+#include "Texture.hpp"
 
 class Face
 {
 public:
-	int a, b, c;
+	int a = 0, b = 0, c = 0;
+	Texture2 a_uv, b_uv, c_uv;
 	Color color = 0xFFFFFFFF;
 public:
 };
@@ -16,8 +16,10 @@ class Triangle2
 {
 public:
 	std::array<Vector2, 3> points;
+	std::array<Texture2, 3> tex_coords;
 	Color color = 0xFFFFFFFF;
 	float depth = 0;
+public:
 	bool operator<(Triangle2 const& t) const;
 	bool operator>(Triangle2 const& t) const;
 };

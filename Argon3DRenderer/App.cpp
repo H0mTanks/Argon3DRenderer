@@ -1,3 +1,7 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "PrecompiledHeaders.hpp"
 #include "App.hpp"
 #include "Vector.hpp"
@@ -5,6 +9,7 @@
 #include "Matrix.hpp"
 #include "Color.hpp"
 #include "Light.hpp"
+#include "Texture.hpp"
 #include "Profiler.hpp"
 
 Vector3 camera_position = Vector3(0, 0, 0);
@@ -90,6 +95,12 @@ void App::process_input()
 			if (event.key.keysym.sym == SDLK_4) {
 				render_type = Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME;
 			}
+			if (event.key.keysym.sym == SDLK_5) {
+				render_type = Draw::Render_type::RENDER_TEXTURED;
+			}
+			if (event.key.keysym.sym == SDLK_6) {
+				render_type = Draw::Render_type::RENDER_TEXTURED_WIRE;
+			}
 			if (event.key.keysym.sym == SDLK_c) {
 				cull_type = Draw::Cull_type::CULL_BACKFACE;
 			}
@@ -107,8 +118,8 @@ void App::update()
 {
 	PROFILE_FUNCTION();
 
-	mesh.rotation.x += 0.00f;
-	mesh.rotation.y += 0.00f;
+	mesh.rotation.x += 0.01f;
+	mesh.rotation.y += 0.01f;
 	mesh.rotation.z += 0.01f;
 
 	mesh.scale.x = 0.5;
@@ -117,6 +128,7 @@ void App::update()
 
 	//mesh.translation.x += 0.01f;
 	mesh.translation.z = 5.0f;
+	//mesh.translation.y = -1.0f;
 
 	Matrix4 scale_matrix = Matrix4::make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
 	Matrix4 translation_matrix = Matrix4::make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
@@ -159,19 +171,20 @@ void App::update()
 		for (int j = 0; j < 3; j++) {
 			Vector4 projected_point = projection_matrix.mul_project(transformed_triangle.points[j].to_vec4());
 
-			projected_point.x *= WINDOW_WIDTH * 0.5;
-			projected_point.y *= WINDOW_HEIGHT * 0.5;
+			projected_point.x *= WINDOW_WIDTH * 0.5f;
+			projected_point.y *= WINDOW_HEIGHT * 0.5f;
 
 			projected_point.y *= -1;
 
-			projected_point.x += WINDOW_WIDTH * 0.5;
-			projected_point.y += WINDOW_HEIGHT * 0.75;
+			projected_point.x += WINDOW_WIDTH * 0.5f;
+			projected_point.y += WINDOW_HEIGHT * 0.5f;
 
 
 			projected_triangle.points[j] = projected_point.to_vec3().orthographic_project();
 		}
 
 		float light_factor = -transformed_triangle.normal_deviation(global_light.direction);
+		projected_triangle.tex_coords = { mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv };
 		projected_triangle.color = global_light.intensity(mesh_face.color, light_factor);
 		projected_triangle.depth = avg_depth;
 		triangles_to_render.push_back(projected_triangle);
@@ -196,8 +209,13 @@ void App::render()
 			Draw::fill_triangle(triangle, triangle.color);
 		}
 
-		if (render_type != Draw::Render_type::RENDER_FILL_TRIANGLE) {
+		if (render_type == Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME || render_type == Draw::Render_type::RENDER_TEXTURED_WIRE
+			|| render_type == Draw::Render_type::RENDER_WIREFRAME_VERTEX || render_type == Draw::Render_type::RENDER_WIREFRAME) {
 			Draw::triangle(triangle, 0xDDDDDD00);
+		}
+
+		if (render_type == Draw::Render_type::RENDER_TEXTURED || render_type == Draw::Render_type::RENDER_TEXTURED_WIRE) {
+			Draw::textured_triangle(triangle, mesh_texture);
 		}
 
 		if (render_type == Draw::Render_type::RENDER_WIREFRAME_VERTEX) {
@@ -215,31 +233,11 @@ void App::render()
 	SDL_RenderPresent(renderer);
 }
 
-	/*int trianglesize = triangles_to_render.size();
-	for (int i = 0; i < trianglesize; i++) {
-		Triangle2 triangle = triangles_to_render[i];
-		int ax = triangle.points[0].x;
-		int bx = triangle.points[1].x;
-		int cx = triangle.points[2].x;
-		int ay = triangle.points[0].y;
-		int by = triangle.points[1].y;
-		int cy = triangle.points[2].y;
-
-
-		Draw::filled_triangle(ax, ay, bx, by, cx, cy, 0xFFFFFF00);
-	}*/
-
-	/*Triangle2 trianglet = { Vector2(300, 100), Vector2(50, 400), Vector2(500, 700) };
-
-	Draw::filled_triangle(300, 100, 50, 400, 500, 700, 0xFFFFFF00);*/
-
-
 
 //	Sets up the display buffer and should be called during Initialisation
 void App::setup_display()
 {
-
-	display_buffer = static_cast<Color*> (new Color[WINDOW_WIDTH * WINDOW_HEIGHT]);
+	display_buffer = new Color[WINDOW_HEIGHT * WINDOW_WIDTH];
 	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(Color));
 
 	if (!display_buffer) {
@@ -248,17 +246,20 @@ void App::setup_display()
 
 	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	if (!mesh.load_obj_mesh_data("./assets/f22.obj")) {
+	/*if (!mesh.load_obj_mesh_data("./assets/duck2.obj")) {
 		quit();
 		return;
-	}
+	}*/
 
-	constexpr float fov = 60 * M_PI / 180;
+	constexpr float fov = 60.0f * static_cast<float>(M_PI) / 180.0f;
 	float aspect = (float)WINDOW_HEIGHT / (float)WINDOW_WIDTH;
-	float znear = 0.1f;
-	float zfar = 100.0f;
+	constexpr float znear = 0.1f;
+	constexpr float zfar = 100.0f;
 	projection_matrix = Matrix4::make_perspective(fov, aspect, znear, zfar);
 
+	mesh_texture = (Color*)(REDBRICK_TEXTURE);
+	texture_height = 64;
+	texture_width = 64;
 
 	mesh.load_cube_mesh_data();
 
@@ -282,7 +283,7 @@ void App::quit()
 
 void App::destroy()
 {
-	delete display_buffer;
+	delete[] display_buffer;
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

@@ -1,6 +1,7 @@
 #include "PrecompiledHeaders.hpp"
 #include "Light.hpp"
 
+
 Light::Light()
 {
 }
@@ -11,7 +12,7 @@ Light::Light(float x, float y, float z)
     direction = direction.normalize();
 }
 
-Light::Light(Vector3& const v)
+Light::Light(Vector3 const& v)
 {
     direction = v.normalize();
 }

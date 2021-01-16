@@ -86,7 +86,7 @@ public:
     InstrumentationTimer(std::string name)
         : m_Name(name), m_Stopped(false)
     {
-        size_t pos = name.find("l");
+        size_t pos = name.find('l');
         name = name.substr(pos + 2);
         m_Name = name;
         m_StartTimepoint = std::chrono::high_resolution_clock::now();
@@ -116,10 +116,10 @@ private:
     bool m_Stopped;
 };
 
-#define PROFILING 1
+#define PROFILING 0
 #if PROFILING
 #define PROFILE_SCOPE(name) InstrumentationTimer timer##__LINE__(name)
 #define PROFILE_FUNCTION() PROFILE_SCOPE(__FUNCSIG__)
 #else
-#define PROFILE_SCOPE(name)
+#define PROFILE_FUNCTION(name)
 #endif

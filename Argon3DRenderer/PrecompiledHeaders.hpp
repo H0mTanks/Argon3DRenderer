@@ -15,3 +15,7 @@
 #include <vector>
 
 #include <SDL.h>
+
+extern int allocated;
+extern int deleted;
+#define USAGE std::cout << "usage " << allocated << " bytes\n";

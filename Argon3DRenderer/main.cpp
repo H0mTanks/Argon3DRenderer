@@ -13,8 +13,13 @@ int main(int argc, char* args[])
 		app->render();
 	}
 
-	app->destroy();
+	//USAGE;
+
 	Instrumentor::Get().EndSession();
+	app->destroy();
+	delete app;
+
+	//USAGE;
 
 	return 0;
 }

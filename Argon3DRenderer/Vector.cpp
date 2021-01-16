@@ -196,6 +196,22 @@ Vector3 Vector3::normalize() const
 	return Vector3(v.x / magnitude, v.y / magnitude, v.z / magnitude);
 }
 
+Vector3 Vector3::barycentric_weights(Vector2_int const& a, Vector2_int const& b, Vector2_int const& c, Vector2_int const& p)
+{
+	Vector2_int ab = b.sub(a);
+	Vector2_int bc = c.sub(b);
+	Vector2_int ac = c.sub(a);
+	Vector2_int ap = p.sub(a);
+	Vector2_int bp = p.sub(b);
+
+	float area_triangle_abc = (ab.x * ac.y - ab.y * ac.x);
+	float alpha = (bc.x * bp.y - bp.x * bc.y) / area_triangle_abc;
+	float beta = (ap.x * ac.y - ac.x * ap.y) / area_triangle_abc;
+	float gamma = 1 - alpha - beta;
+
+	return Vector3(alpha, beta, gamma);
+}
+
 Vector4 Vector3::to_vec4()
 {
 	Vector3 const& v3 = *this;

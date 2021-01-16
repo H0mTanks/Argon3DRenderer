@@ -20,6 +20,18 @@ public:
 };
 std::ostream& operator<<(std::ostream& stream, Vector2 const& v);
 
+struct Vector2_int
+{
+	int x = 0;
+	int y = 0;
+
+public:
+	Vector2_int();
+	Vector2_int(int x, int y);
+
+	Vector2_int sub(Vector2_int const& v2) const;
+};
+
 
 // Struct for holding a 3-Dimensional Vector
 struct Vector4;
@@ -50,24 +62,12 @@ public:
 	Vector3 cross(Vector3 const& v2) const;
 	Vector3 normalize() const;
 
+	static Vector3 barycentric_weights(Vector2_int const& a, Vector2_int const& b, Vector2_int const& c, Vector2_int const& p);
+
 	Vector4 to_vec4();
 
 };
 std::ostream& operator<<(std::ostream& stream, Vector3 const& v);
-
-
-struct Vector2_int
-{
-	int x = 0;
-	int y = 0;
-	int z = 0;
-
-public:
-	Vector2_int();
-	Vector2_int(int x, int y);
-
-	Vector2_int sub(Vector2_int const& v2) const;
-};
 
 
 struct Vector4

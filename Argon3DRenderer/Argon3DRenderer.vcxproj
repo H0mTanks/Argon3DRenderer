@@ -28,6 +28,7 @@
     <ClCompile Include="PrecompiledHeaders.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
@@ -40,6 +41,7 @@
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="PrecompiledHeaders.hpp" />
     <ClInclude Include="Profiler.hpp" />
+    <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Triangle.hpp" />
     <ClInclude Include="Vector.hpp" />
   </ItemGroup>

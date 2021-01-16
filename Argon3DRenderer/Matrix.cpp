@@ -1,6 +1,7 @@
 #include "PrecompiledHeaders.hpp"
 #include "Matrix.hpp"
 
+
 Matrix4::Matrix4()
 {
     m.fill({});
@@ -115,7 +116,7 @@ Matrix4 Matrix4::make_perspective(float fov, float aspect, float znear, float zf
 
     return m;
 }
-
+ 
 Vector4 Matrix4::mul_project(Vector4 const& v) const
 {
     Matrix4 const& projection_matrix = *this;
