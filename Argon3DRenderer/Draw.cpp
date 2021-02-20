@@ -397,14 +397,14 @@ void Draw::grid()
 	//vertical lines
 	for (int y = 0; y < App::WINDOW_HEIGHT; y++) {
 		for (int x = 0; x < App::WINDOW_WIDTH; x += 30) {
-			App::display_buffer[App::WINDOW_WIDTH * y + x] = 0x101010FF;
+			App::display_buffer[App::WINDOW_WIDTH * y + x] = 0xFF101010;
 		}
 	}
 
 	//horizontal lines
 	for (int y = 0; y < App::WINDOW_HEIGHT; y += 30) {
 		for (int x = 0; x < App::WINDOW_WIDTH; x++) {
-			App::display_buffer[App::WINDOW_WIDTH * y + x] = 0x101010FF;
+			App::display_buffer[App::WINDOW_WIDTH * y + x] = 0xFF101010;
 		}
 	}
 }

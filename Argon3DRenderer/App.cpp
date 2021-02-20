@@ -11,6 +11,7 @@
 #include "Light.hpp"
 #include "Texture.hpp"
 #include "Profiler.hpp"
+#include "upng.h"
 
 Vector3 camera_position = Vector3(0, 0, 0);
 std::vector<Triangle4> triangles_to_render;
@@ -214,7 +215,7 @@ void App::render()
 
 		if (render_type == Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME || render_type == Draw::Render_type::RENDER_TEXTURED_WIRE
 			|| render_type == Draw::Render_type::RENDER_WIREFRAME_VERTEX || render_type == Draw::Render_type::RENDER_WIREFRAME) {
-			Draw::triangle(triangle, 0xDDDDDD00);
+			Draw::triangle(triangle, 0xFFDDDDDD);
 		}
 
 		if (render_type == Draw::Render_type::RENDER_TEXTURED || render_type == Draw::Render_type::RENDER_TEXTURED_WIRE) {
@@ -222,9 +223,9 @@ void App::render()
 		}
 
 		if (render_type == Draw::Render_type::RENDER_WIREFRAME_VERTEX) {
-			Draw::rectangle(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFFFFFF00);
-			Draw::rectangle(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFFFFFF00);
-			Draw::rectangle(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, 0xFFFFFF00);
+			Draw::rectangle(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFFFFFFFF);
+			Draw::rectangle(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFFFFFFFF);
+			Draw::rectangle(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, 0xFFFFFFFF);
 		}
 	}
 
@@ -247,7 +248,9 @@ void App::setup_display()
 		std::cout << "Could not allocate memory for buffer";
 	}
 
-	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
+	//actual color is stored as reverse RGBA (ABGR) probably because of endianness or something
+	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
+
 
 	/*if (!mesh.load_obj_mesh_data("./assets/duck2.obj")) {
 		quit();
@@ -260,11 +263,9 @@ void App::setup_display()
 	constexpr float zfar = 100.0f;
 	projection_matrix = Matrix4::make_perspective(fov, aspect, znear, zfar);
 
-	mesh_texture = (Color*)(REDBRICK_TEXTURE);
-	texture_height = 64;
-	texture_width = 64;
-
 	mesh.load_cube_mesh_data();
+	load_png_texture_data("./assets/cube.png");
+	
 
 	std::cout << "done" << '\n';
 
@@ -287,6 +288,7 @@ void App::quit()
 void App::destroy()
 {
 	delete[] display_buffer;
+	upng_free(png_texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

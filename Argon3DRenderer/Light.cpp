@@ -24,12 +24,12 @@ Color Light::intensity(Color color, float factor)
 
     //std::cout << factor << '\n';
 
-    Color r = (color & 0xFF000000) * factor;
-    Color g = (color & 0x00FF0000) * factor;
-    Color b = (color & 0x0000FF00) * factor;
-    Color a = (color & 0x000000FF);
+    Color r = (color & 0x000000FF) * factor;
+    Color g = (color & 0x0000FF00) * factor;
+    Color b = (color & 0x00FF0000) * factor;
+    Color a = (color & 0xFF000000);
 
-    Color new_color = (r & 0xFF000000) | (g & 0x00FF0000) | (b & 0x0000FF00) | a;
+    Color new_color = (r & 0x000000FF) | (g & 0x0000FF00) | (b & 0x00FF0000) | a;
 
     return new_color;
 }
