@@ -18,9 +18,9 @@ bool Mesh::load_obj_mesh_data(const char* filepath)
 	fopen_s(&file, filepath, "r");
 	char line[1024];
 
-	Face vertex_index;
-	Face texture_index;
-	Face normal_index;
+	/*Face vertex_index;
+	Face texture_index;*/
+	//Face normal_index;
 
 	while (fgets(line, 1024, file)) {
 		switch (line[0]) {
@@ -37,24 +37,32 @@ bool Mesh::load_obj_mesh_data(const char* filepath)
 						normals.push_back(normal);
 					} break;
 					case 't': {
-						Vector2 texture;
-						sscanf_s(line, "vt %f %f", &texture.x, &texture.y);
+						Texture2 texture;
+						sscanf_s(line, "vt %f %f", &texture.u, &texture.v);
 						textures.push_back(texture);
 					} break;
 				}
 			} break;
 
 			case 'f': { // Face information
+				int vertex_indices[3];
+				int texture_indices[3];
+				int normal_indices[3];
 				int match = sscanf_s(line, "f %d/%d/%d %d/%d/%d %d/%d/%d",
-					&vertex_index.a, &texture_index.a, &normal_index.a,
-					&vertex_index.b, &texture_index.b, &normal_index.b,
-					&vertex_index.c, &texture_index.c, &normal_index.c
+					&vertex_indices[0], &texture_indices[0], &normal_indices[0],
+					&vertex_indices[1], &texture_indices[1], &normal_indices[1],
+					&vertex_indices[2], &texture_indices[2], &normal_indices[2]
 				);
 				if (match == 9) {
-					texture_indices.push_back(texture_index);
-					normal_indices.push_back(normal_index);
+					Face face = { vertex_indices[0] - 1, vertex_indices[1] - 1, vertex_indices[2] - 1,
+						textures[texture_indices[0] - 1], textures[texture_indices[1] - 1], textures[texture_indices[2] - 1]
+					};
+					
+					faces.push_back(face);
+					/*texture_indices.push_back(texture_index);
+					normal_indices.push_back(normal_index);*/
 				}
-				else {
+				/*else {
 					match = sscanf_s(line, "f %d/%d %d/%d %d/%d",
 						&vertex_index.a, &texture_index.a,
 						&vertex_index.b, &texture_index.b,
@@ -70,8 +78,8 @@ bool Mesh::load_obj_mesh_data(const char* filepath)
 							&vertex_index.c
 						);
 					}
-				}
-				faces.push_back(vertex_index);
+				}*/
+				/*faces.push_back(vertex_index);*/
 			} break;
 		}
 	}

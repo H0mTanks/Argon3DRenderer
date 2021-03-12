@@ -27,7 +27,7 @@ int App::WINDOW_HEIGHT = 600;
 SDL_Renderer* App::renderer = nullptr;
 SDL_Texture* App::display_buffer_texture = nullptr;
 Color* App::display_buffer = nullptr;
-
+float* App::z_buffer = nullptr;
 
 
 // Initializes SDL, Window, Renderer and DisplayBuffer
@@ -119,13 +119,13 @@ void App::update()
 {
 	PROFILE_FUNCTION();
 
-	mesh.rotation.x += 0.01f;
+	//mesh.rotation.x += 0.01f;
 	mesh.rotation.y += 0.01f;
-	mesh.rotation.z += 0.01f;
+	//mesh.rotation.z += 0.01f;
 
-	mesh.scale.x = 0.5;
-	mesh.scale.y = 0.5;
-	mesh.scale.z = 0.5;
+	mesh.scale.x = 0.9;
+	mesh.scale.y = 0.9;
+	mesh.scale.z = 0.9;
 
 	//mesh.translation.x += 0.01f;
 	mesh.translation.z = 5.0f;
@@ -145,9 +145,9 @@ void App::update()
 		Face& mesh_face = mesh.faces[i];
 
 		std::array<Vector3, 3> face_vertices;
-		face_vertices[0] = mesh.vertices[mesh_face.a - 1];
-		face_vertices[1] = mesh.vertices[mesh_face.b - 1];
-		face_vertices[2] = mesh.vertices[mesh_face.c - 1];
+		face_vertices[0] = mesh.vertices[mesh_face.a];
+		face_vertices[1] = mesh.vertices[mesh_face.b];
+		face_vertices[2] = mesh.vertices[mesh_face.c];
 
 		for (int j = 0; j < 3; j++) {
 			Vector4 transformed_vertex = face_vertices[j].to_vec4();
@@ -169,7 +169,7 @@ void App::update()
 		}
 
 
-		float avg_depth = (transformed_triangle.points[0].z + transformed_triangle.points[1].z + transformed_triangle.points[2].z) / 3.0f;
+		//float avg_depth = (transformed_triangle.points[0].z + transformed_triangle.points[1].z + transformed_triangle.points[2].z) / 3.0f;
 
 		for (int j = 0; j < 3; j++) {
 			Vector4 projected_point = projection_matrix.mul_project(transformed_triangle.points[j]);
@@ -188,10 +188,10 @@ void App::update()
 		float light_factor = -transformed_triangle3.normal_deviation(global_light.direction);
 		projected_triangle.tex_coords = { mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv };
 		projected_triangle.color = global_light.intensity(mesh_face.color, light_factor);
-		projected_triangle.depth = avg_depth;
+		//projected_triangle.depth = avg_depth;
 		triangles_to_render.push_back(projected_triangle);
 
-		//std::stable_sort(triangles_to_render.begin(), triangles_to_render.end(), std::greater<Triangle2>());
+		//std::sort(triangles_to_render.begin(), triangles_to_render.end(), std::greater<Triangle4>());
 	}
 
 }
@@ -207,15 +207,15 @@ void App::render()
 	int trianglesize = triangles_to_render.size();
 	for (int i = 0; i < trianglesize; i++) {
 		Triangle4 triangle4 = triangles_to_render[i];
-		Triangle2 triangle = triangle4.to_triangle2();
+		//Triangle2 triangle = triangle4.to_triangle2();
 
 		if (render_type == Draw::Render_type::RENDER_FILL_TRIANGLE || render_type == Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME) {
-			Draw::fill_triangle(triangle, triangle.color);
+			Draw::fill_triangle(triangle4, triangle4.color);
 		}
 
 		if (render_type == Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME || render_type == Draw::Render_type::RENDER_TEXTURED_WIRE
 			|| render_type == Draw::Render_type::RENDER_WIREFRAME_VERTEX || render_type == Draw::Render_type::RENDER_WIREFRAME) {
-			Draw::triangle(triangle, 0xFFDDDDDD);
+			Draw::triangle(triangle4, 0xFFDDDDDD);
 		}
 
 		if (render_type == Draw::Render_type::RENDER_TEXTURED || render_type == Draw::Render_type::RENDER_TEXTURED_WIRE) {
@@ -223,9 +223,9 @@ void App::render()
 		}
 
 		if (render_type == Draw::Render_type::RENDER_WIREFRAME_VERTEX) {
-			Draw::rectangle(triangle.points[0].x - 3, triangle.points[0].y - 3, 6, 6, 0xFFFFFFFF);
-			Draw::rectangle(triangle.points[1].x - 3, triangle.points[1].y - 3, 6, 6, 0xFFFFFFFF);
-			Draw::rectangle(triangle.points[2].x - 3, triangle.points[2].y - 3, 6, 6, 0xFFFFFFFF);
+			Draw::rectangle(triangle4.points[0].x - 3, triangle4.points[0].y - 3, 6, 6, 0xFFFFFFFF);
+			Draw::rectangle(triangle4.points[1].x - 3, triangle4.points[1].y - 3, 6, 6, 0xFFFFFFFF);
+			Draw::rectangle(triangle4.points[2].x - 3, triangle4.points[2].y - 3, 6, 6, 0xFFFFFFFF);
 		}
 	}
 
@@ -233,6 +233,7 @@ void App::render()
 
 	triangles_to_render.clear();
 	clear_display_buffer();
+	clear_z_buffer();
 
 	SDL_RenderPresent(renderer);
 }
@@ -241,8 +242,11 @@ void App::render()
 //	Sets up the display buffer and should be called during Initialisation
 void App::setup_display()
 {
-	display_buffer = new Color[WINDOW_HEIGHT * WINDOW_WIDTH];
-	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(Color));
+	display_buffer = new Color[static_cast<long long>(WINDOW_HEIGHT) * WINDOW_WIDTH];
+	memset(display_buffer, 0, static_cast<long long>(WINDOW_WIDTH) * WINDOW_HEIGHT * sizeof(Color));
+
+	z_buffer = new float[static_cast<long long>(WINDOW_HEIGHT) * WINDOW_WIDTH];
+	clear_z_buffer();
 
 	if (!display_buffer) {
 		std::cout << "Could not allocate memory for buffer";
@@ -252,10 +256,11 @@ void App::setup_display()
 	display_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
-	/*if (!mesh.load_obj_mesh_data("./assets/duck2.obj")) {
+	if (!mesh.load_obj_mesh_data("./assets/crab.obj")) {
 		quit();
 		return;
-	}*/
+	}
+	load_png_texture_data("./assets/crab.png");
 
 	constexpr float fov = 60.0f * static_cast<float>(M_PI) / 180.0f;
 	float aspect = (float)WINDOW_HEIGHT / (float)WINDOW_WIDTH;
@@ -263,18 +268,26 @@ void App::setup_display()
 	constexpr float zfar = 100.0f;
 	projection_matrix = Matrix4::make_perspective(fov, aspect, znear, zfar);
 
-	mesh.load_cube_mesh_data();
-	load_png_texture_data("./assets/cube.png");
+	//mesh.load_cube_mesh_data();
 	
 
 	std::cout << "done" << '\n';
-
 }
 
 
-void App::clear_display_buffer()
+inline void App::clear_display_buffer()
 {
-	memset(display_buffer, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(Color));
+	memset(display_buffer, 0, static_cast<long long>(WINDOW_WIDTH) * WINDOW_HEIGHT * sizeof(Color));
+}
+
+inline void App::clear_z_buffer()
+{
+	memset(z_buffer, 0, static_cast<long long>(WINDOW_HEIGHT) * WINDOW_WIDTH * sizeof(float));
+	/*for (int y = 0; y < WINDOW_HEIGHT; y++) {
+		for (int x = 0; x < WINDOW_WIDTH; x++) {
+			z_buffer[(WINDOW_WIDTH * y) + x] = 1.0;
+		}
+	}*/
 }
 
 
@@ -288,6 +301,7 @@ void App::quit()
 void App::destroy()
 {
 	delete[] display_buffer;
+	delete[] z_buffer;
 	upng_free(png_texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);

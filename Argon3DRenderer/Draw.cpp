@@ -14,18 +14,18 @@ void Draw::rectangle(const int x, const int y, const int width, const int height
 }
 
 
-void Draw::triangle(Triangle2 const& triangle, Color color)
+void Draw::triangle(Triangle4 const& triangle, Color color)
 {
 	line(triangle.points[0].x, triangle.points[0].y, triangle.points[1].x, triangle.points[1].y, color);
 	line(triangle.points[1].x, triangle.points[1].y, triangle.points[2].x, triangle.points[2].y, color);
 	line(triangle.points[2].x, triangle.points[2].y, triangle.points[0].x, triangle.points[0].y, color);
 }
 
-void Draw::fill_triangle(Triangle2 const& triangle, Color color)
+void Draw::fill_triangle(Triangle4 const& triangle, Color color)
 {
-	Vector2_int a(triangle.points[0].x, triangle.points[0].y);
-	Vector2_int b(triangle.points[1].x, triangle.points[1].y);
-	Vector2_int c(triangle.points[2].x, triangle.points[2].y);
+	Vector4_int a(triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w);
+	Vector4_int b(triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w);
+	Vector4_int c(triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w);
 
 	if (a.y == b.y && a.y == c.y) { //protect against degenerate triangles to avoid divisions by zero later
 		return;
@@ -46,16 +46,15 @@ void Draw::fill_triangle(Triangle2 const& triangle, Color color)
 
 	Vector2_int m(((c.x - a.x) * (b.y - a.y)) / (c.y - a.y) + a.x, b.y);
 
-	fill_bottom_triangle(a, b, m, color);
+	fill_bottom_triangle(a, b, c, m, color);
 	
-	fill_top_triangle(b, m, c, color);
+	fill_top_triangle(a, b, c, m, color);
 
 }
 
 
-void Draw::fill_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vector2_int const& m, Color color)
-{
-	
+void Draw::fill_bottom_triangle(Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, Vector2_int const& m, Color color)
+{	
 	float slope_ab = (float)(a.x - b.x) / (a.y - b.y);
 	float slope_am = (float)(a.x - m.x) / (a.y - m.y);
 
@@ -65,7 +64,16 @@ void Draw::fill_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vect
 	
 	for (int y = a.y; y <= b.y; y++) {
 
-		line(x_start, y, x_end, y, color);
+		if (x_start <= x_end) {
+			for (int x = x_start; x <= x_end; x++) {
+				fill_pixel(x, y, color, a, b, c);
+			}
+		}
+		else {
+			for (int x = x_end; x <= x_start; x++) {
+				fill_pixel(x, y, color, a, b, c);
+			}
+		}
 
 		x_start += slope_ab;
 		x_end += slope_am;
@@ -73,7 +81,7 @@ void Draw::fill_bottom_triangle(Vector2_int const& a, Vector2_int const& b, Vect
 }
 
 
-void Draw::fill_top_triangle(Vector2_int const& b, Vector2_int const& m, Vector2_int const& c, Color color)
+void Draw::fill_top_triangle(Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, Vector2_int const& m, Color color)
 {
 	float slope_cb = (float)(c.x - b.x) / (c.y - b.y);
 	float slope_cm = (float)(c.x - m.x) / (c.y - m.y);
@@ -84,7 +92,16 @@ void Draw::fill_top_triangle(Vector2_int const& b, Vector2_int const& m, Vector2
 	
 	for (int y = c.y; y >= b.y; y--) {
 
-		line(x_start, y, x_end, y, color);
+		if (x_start <= x_end) {
+			for (int x = x_start; x <= x_end; x++) {
+				fill_pixel(x, y, color, a, b, c);
+			}
+		}
+		else {
+			for (int x = x_end; x <= x_start; x++) {
+				fill_pixel(x, y, color, a, b, c);
+			}
+		}
 
 		x_start -= slope_cb;
 		x_end -= slope_cm;
@@ -187,6 +204,12 @@ void Draw::textured_triangle(Triangle4 const& triangle, Color* texture)
 		std::swap(a, b);
 		std::swap(a_uv, b_uv);
 	}
+
+	//flip v because otherwise the texture gets mapped as flipped because the obj file doesn't specify coordinates
+	//from the bottom left
+	a_uv.v = 1 - a_uv.v;
+	b_uv.v = 1 - b_uv.v;
+	c_uv.v = 1 - c_uv.v;
 
 
 	Vector2_int m(((c.x - a.x) * (b.y - a.y)) / (c.y - a.y) + a.x, b.y);
@@ -358,6 +381,23 @@ void Draw::pixel(const int x, const int y, const Color color)
 	}
 }
 
+void Draw::fill_pixel(const int x, const int y, const Color color, Vector4_int const& a, Vector4_int const& b, Vector4_int const& c)
+{
+	Vector2_int p(x, y);
+	Vector3 weights = Vector3::barycentric_weights(a.to_vec2_int(), b.to_vec2_int(), c.to_vec2_int(), p);
+
+	float alpha = weights.x;
+	float beta = weights.y;
+	float gamma = weights.z;
+
+	float interpolated_reciprocal_w = (1 / a.w) * alpha + (1 / b.w) * beta + (1 / c.w) * gamma;
+
+	if (interpolated_reciprocal_w > App::z_buffer[(App::WINDOW_WIDTH * y) + x]) {
+		pixel(x, y, color);
+		App::z_buffer[(App::WINDOW_WIDTH * y) + x] = interpolated_reciprocal_w;
+	}
+}
+
 
 void Draw::texel(const int x, const int y, Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, 
 	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, const Color* texture)
@@ -369,26 +409,32 @@ void Draw::texel(const int x, const int y, Vector4_int const& a, Vector4_int con
 	float beta = weights.y;
 	float gamma = weights.z;
 
-
-	/*float interpolated_u = (a_uv.u / a.w) * alpha + (b_uv.u / b.w) * beta + (c_uv.u / c.w) * gamma;
+	float interpolated_u = (a_uv.u / a.w) * alpha + (b_uv.u / b.w) * beta + (c_uv.u / c.w) * gamma;
 	float interpolated_v = (a_uv.v / a.w) * alpha + (b_uv.v / b.w) * beta + (c_uv.v / c.w) * gamma;
 
 	float interpolated_reciprocal_w = (1 / a.w) * alpha + (1 / b.w) * beta + (1 / c.w) * gamma;
 
 	interpolated_u /= interpolated_reciprocal_w;
-	interpolated_v /= interpolated_reciprocal_w;*/
+	interpolated_v /= interpolated_reciprocal_w;
 
-	float A = alpha * b.w * c.w;
+	/*float A = alpha * b.w * c.w;
 	float B = beta * a.w * c.w;
 	float C = gamma * a.w * b.w;
 
-	float interpolated_u = (a_uv.u * A + b_uv.u * B + c_uv.u * C) / (A + B + C);
-	float interpolated_v = (a_uv.v * A + b_uv.v * B + c_uv.v * C) / (A + B + C);
+	float interpolated_reciprocal_w = A + B + C;
+	float interpolated_u = (a_uv.u * A + b_uv.u * B + c_uv.u * C) / interpolated_reciprocal_w;
+	float interpolated_v = (a_uv.v * A + b_uv.v * B + c_uv.v * C) / interpolated_reciprocal_w;*/
 
-	int tex_x = abs(static_cast<int>(interpolated_u * texture_width));
-	int tex_y = abs(static_cast<int>(interpolated_v * texture_height));
 
-	pixel(x, y, texture[(tex_y * texture_width + tex_x) % 4096]);
+	int tex_x = abs(static_cast<int>(interpolated_u * texture_width)) % texture_width;
+	int tex_y = abs(static_cast<int>(interpolated_v * texture_height)) % texture_height;
+
+	//interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
+
+	if (interpolated_reciprocal_w > App::z_buffer[(App::WINDOW_WIDTH * y) + x]) {
+		pixel(x, y, texture[(tex_y * texture_width) + tex_x]);
+		App::z_buffer[(App::WINDOW_WIDTH * y) + x] = interpolated_reciprocal_w;
+	}
 }
 
 //Draws a dark grey grid of 30 pixel boxes

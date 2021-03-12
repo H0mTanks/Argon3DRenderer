@@ -18,12 +18,9 @@ public:
 	std::array<Vector2, 3> points;
 	std::array<Texture2, 3> tex_coords;
 	Color color = 0xFFFFFFFF;
-	float depth = 0;
 public:
 	Triangle2();
-	Triangle2(Vector2 a, Vector2 b, Vector2 c, Color color, float depth);
-	bool operator<(Triangle2 const& t) const;
-	bool operator>(Triangle2 const& t) const;
+	Triangle2(Vector2 a, Vector2 b, Vector2 c, Color color);
 };
 
 
@@ -48,7 +45,6 @@ public:
 	std::array<Texture2, 3> tex_coords;
 	mutable Vector3 face_normal = { 0,0,0 };
 	Color color = 0xFFFFFFFF;
-	float depth = 0;
 public:
 	Triangle3 to_triangle3();
 	Triangle2 to_triangle2();

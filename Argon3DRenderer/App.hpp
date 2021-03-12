@@ -12,6 +12,7 @@ public:
 	static SDL_Renderer* renderer;
 	static SDL_Texture* display_buffer_texture;
 	static Color* display_buffer;
+	static float* z_buffer;
 	Draw::Render_type render_type = Draw::Render_type::RENDER_FILL_TRIANGLE_WIREFRAME;
 	Draw::Cull_type cull_type = Draw::Cull_type::CULL_BACKFACE;
 	bool is_running = false;
@@ -22,7 +23,8 @@ public:
 	void update();
 	void render();
 	void render_display_buffer();
-	void clear_display_buffer();
+	inline void clear_display_buffer();
+	inline void clear_z_buffer();
 	void setup_display();
 	void quit();
 	void destroy();

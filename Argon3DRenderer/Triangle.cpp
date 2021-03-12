@@ -46,28 +46,19 @@ bool Triangle3::backface(Vector3 const& camera_position) const
 	return face_normal.dot(camera_ray) < 0;
 }
 
-bool Triangle2::operator<(Triangle2 const& t) const
-{
-	return depth < t.depth;
-}
 
 Triangle2::Triangle2()
 {
 }
 
 
-Triangle2::Triangle2(Vector2 a, Vector2 b, Vector2 c, Color color, float depth)
+Triangle2::Triangle2(Vector2 a, Vector2 b, Vector2 c, Color color)
 {
 	points = { a, b, c};
 	this->color = color;
-	this->depth = depth;
 }
 
 
-bool Triangle2::operator>(Triangle2 const& t) const
-{
-	return depth > t.depth;
-}
 
 Triangle3 Triangle4::to_triangle3()
 {
@@ -76,8 +67,9 @@ Triangle3 Triangle4::to_triangle3()
 
 Triangle2 Triangle4::to_triangle2()
 {
-	return Triangle2(points[0].to_vec2(), points[1].to_vec2(), points[2].to_vec2(), color, depth);
+	return Triangle2(points[0].to_vec2(), points[1].to_vec2(), points[2].to_vec2(), color);
 }
+
 
 float Triangle3::normal_deviation(Vector3 const& v)
 {
@@ -87,7 +79,7 @@ float Triangle3::normal_deviation(Vector3 const& v)
 
 	//Vector3 ab = b.sub(a);
 	//Vector3 ac = c.sub(a);
-	///*ab = ab.normalize();
+	//*ab = ab.normalize();
 	//ac = ac.normalize();*/
 
 	//Vector3 normal = ab.cross(ac); //v1 x v2

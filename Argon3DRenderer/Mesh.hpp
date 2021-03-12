@@ -8,10 +8,10 @@ class Mesh
 public:
 	std::vector<Vector3> vertices;
 	std::vector<Vector3> normals; //added
-	std::vector<Vector2> textures; //added
+	std::vector<Texture2> textures; //added
 	std::vector<Face> faces;
-	std::vector<Face> normal_indices;
-	std::vector<Face> texture_indices;
+	//std::vector<Face> normal_indices;
+	//std::vector<Face> texture_indices;
 	Vector3 rotation = { 0, 0, 0 };
 	Vector3 scale = { 1, 1, 1 };
 	Vector3 translation = { 0, 0, 0 };
