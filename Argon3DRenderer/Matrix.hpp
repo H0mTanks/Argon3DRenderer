@@ -21,6 +21,8 @@ public:
 	static Matrix4 make_world(Matrix4 const& scale, Matrix4 const& rotation_x, Matrix4 const& rotation_y,
 		Matrix4 const& rotation_z, Matrix4 const& translation);
 	static Matrix4 make_perspective(float fov, float aspect, float znear, float zfar);
+	static Matrix4 make_third_person(Vector3 const& camera_position, Vector3 const& target, Vector3 const& up);
+
 	Vector4 mul_project(Vector4 const& v) const;
 
 	Vector4 mul_vector(Vector4 const& v) const;

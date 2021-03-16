@@ -116,6 +116,22 @@ Matrix4 Matrix4::make_perspective(float fov, float aspect, float znear, float zf
 
     return m;
 }
+
+Matrix4 Matrix4::make_third_person(Vector3 const& camera_position, Vector3 const& target, Vector3 const& up)
+{
+    Vector3 z = target.sub(camera_position);
+    z = z.normalize();
+    Vector3 x = up.cross(z);
+    x = x.normalize();
+    Vector3 y = z.cross(x);
+
+    return Matrix4(
+        x.x, x.y, x.z, -x.dot(camera_position),
+        y.x, y.y, y.z, -y.dot(camera_position),
+        z.x, z.y, z.z, -z.dot(camera_position),
+        0, 0, 0, 1
+    );
+}
  
 Vector4 Matrix4::mul_project(Vector4 const& v) const
 {
