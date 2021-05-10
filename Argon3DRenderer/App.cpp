@@ -13,9 +13,10 @@
 #include "Profiler.hpp"
 #include "upng.h"
 #include "Camera.hpp"
+#include "Clipping.hpp"
 
 double old_frame_time = 0.0;
-double delta_time =  0.0;
+double delta_time = 0.0;
 
 Camera camera;
 std::vector<Triangle4> triangles_to_render;
@@ -154,9 +155,9 @@ void App::update()
 	delta_time = (SDL_GetTicks() - old_frame_time) / 1000.0;
 	old_frame_time = SDL_GetTicks();
 
-	mesh.rotation.x += 0.0f  * delta_time;
-	mesh.rotation.y += 0.0f  * delta_time;
-	mesh.rotation.z += 0.0f  * delta_time;
+	mesh.rotation.x += 0.0f * delta_time;
+	mesh.rotation.y += 0.0f * delta_time;
+	mesh.rotation.z += 0.0f * delta_time;
 
 	//mesh.scale.x = 0.9 * delta_time;
 	//mesh.scale.y = 0.9 * delta_time;
@@ -198,7 +199,7 @@ void App::update()
 
 		for (int j = 0; j < 3; j++) {
 			Vector4 transformed_vertex = face_vertices[j].to_vec4();
-			world_matrix = Matrix4::make_world(scale_matrix, rotation_matrix_x, 
+			world_matrix = Matrix4::make_world(scale_matrix, rotation_matrix_x,
 				rotation_matrix_y, rotation_matrix_z, translation_matrix);
 
 			//transform vertex to world space
@@ -220,24 +221,40 @@ void App::update()
 			}
 		}
 
-		for (int j = 0; j < 3; j++) {
-			Vector4 projected_point = projection_matrix.mul_project(transformed_triangle.points[j]);
+		Polygon polygon = create_polygon_from_triangle(transformed_triangle3, mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv);
 
-			projected_point.y *= -1;
+		polygon.clip_polygon();
 
-			projected_point.x *= WINDOW_WIDTH * 0.5f;
-			projected_point.y *= WINDOW_HEIGHT * 0.5f;
+		std::array<Triangle3, MAX_NUM_POLY_TRIANGLES> triangles_after_clipping;
+		int num_triangles_after_clipping = 0;
 
-			projected_point.x += WINDOW_WIDTH * 0.5f;
-			projected_point.y += WINDOW_HEIGHT * 0.5f;
+		if (polygon.num_vertices == 0) continue;
+		polygon.triangles_from_polygon(triangles_after_clipping, num_triangles_after_clipping);
 
-			projected_triangle.points[j] = projected_point;
+		for (size_t t = 0; t < num_triangles_after_clipping; t++) {
+
+			Triangle3 triangle_after_clipping = triangles_after_clipping[t];
+
+			for (int j = 0; j < 3; j++) {
+				Vector4 projected_point = projection_matrix.mul_project((triangle_after_clipping.points[j]).to_vec4());
+
+				projected_point.y *= -1;
+
+				projected_point.x *= WINDOW_WIDTH * 0.5f;
+				projected_point.y *= WINDOW_HEIGHT * 0.5f;
+
+				projected_point.x += WINDOW_WIDTH * 0.5f;
+				projected_point.y += WINDOW_HEIGHT * 0.5f;
+
+				projected_triangle.points[j] = projected_point;
+			}
+
+			float light_factor = -transformed_triangle3.normal_deviation(global_light.direction);
+			projected_triangle.tex_coords = { triangle_after_clipping.tex_coords[0], triangle_after_clipping.tex_coords[1],
+				triangle_after_clipping.tex_coords[2] };
+			projected_triangle.color = global_light.intensity(mesh_face.color, light_factor);
+			triangles_to_render.push_back(projected_triangle);
 		}
-
-		float light_factor = -transformed_triangle3.normal_deviation(global_light.direction);
-		projected_triangle.tex_coords = { mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv };
-		projected_triangle.color = global_light.intensity(mesh_face.color, light_factor);
-		triangles_to_render.push_back(projected_triangle);
 	}
 
 }
@@ -308,14 +325,18 @@ void App::setup_display()
 	}
 	load_png_texture_data("./assets/crab.png");
 
-	constexpr float fov = 60.0f * static_cast<float>(M_PI) / 180.0f;
-	float aspect = (float)WINDOW_HEIGHT / (float)WINDOW_WIDTH;
-	constexpr float znear = 0.1f;
-	constexpr float zfar = 100.0f;
-	projection_matrix = Matrix4::make_perspective(fov, aspect, znear, zfar);
+	constexpr float fov_y = 60.0f * static_cast<float>(M_PI) / 180.0f;
+	float aspect_x = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
+	float fov_x = atan(tan(fov_y / 2) * aspect_x) * 2;
+	float aspect_y = (float)WINDOW_HEIGHT / (float)WINDOW_WIDTH;
+	constexpr float z_near = 0.1f;
+	constexpr float z_far = 100.0f;
+	projection_matrix = Matrix4::make_perspective(fov_y, aspect_y, z_near, z_far);
+
+	init_frustum_planes(fov_x, fov_y, z_near, z_far);
 
 	//mesh.load_cube_mesh_data();
-	
+
 
 	std::cout << "done" << '\n';
 }

@@ -383,6 +383,7 @@ void Draw::pixel(const int x, const int y, const Color color)
 
 void Draw::fill_pixel(const int x, const int y, const Color color, Vector4_int const& a, Vector4_int const& b, Vector4_int const& c)
 {
+	if (y == 1080 || x == 1920) return;
 	Vector2_int p(x, y);
 	Vector3 weights = Vector3::barycentric_weights(a.to_vec2_int(), b.to_vec2_int(), c.to_vec2_int(), p);
 
@@ -402,6 +403,7 @@ void Draw::fill_pixel(const int x, const int y, const Color color, Vector4_int c
 void Draw::texel(const int x, const int y, Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, 
 	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, const Color* texture)
 {
+	if (y == 1080 || x == 1920) return;
 	Vector2_int p(x, y);
 	Vector3 weights = Vector3::barycentric_weights(a.to_vec2_int(), b.to_vec2_int(), c.to_vec2_int(), p);
 

@@ -28,6 +28,7 @@ class Triangle3
 {
 public:
 	std::array<Vector3, 3> points;
+	std::array<Texture2, 3> tex_coords;
 	mutable Vector3 face_normal = { 0,0,0 };
 public:
 	Triangle3();
