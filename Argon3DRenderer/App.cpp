@@ -155,105 +155,112 @@ void App::update()
 	delta_time = (SDL_GetTicks() - old_frame_time) / 1000.0;
 	old_frame_time = SDL_GetTicks();
 
-	mesh.rotation.x += 0.0f * delta_time;
-	mesh.rotation.y += 0.0f * delta_time;
-	mesh.rotation.z += 0.0f * delta_time;
+	for (int mesh_index = 0; mesh_index < get_number_of_meshes(); mesh_index++) {
 
-	//mesh.scale.x = 0.9 * delta_time;
-	//mesh.scale.y = 0.9 * delta_time;
-	//mesh.scale.z = 0.9 * delta_time;
-
-	//mesh.translation.x += 1 * delta_time;
-	mesh.translation.z = 5.0f;
-	//mesh.translation.y = -1.0f;
-
-	//camera.position.x += 0.0 * delta_time;
-	//camera.position.y += 0.0 * delta_time;
-
-	//initialize target looking at positive z-axis
-	Vector3 up_direction = { 0, 1, 0 };
-	Vector3 target = { 0, 0, 1 };
-	Matrix4 yaw_rotation = Matrix4::make_rotation_y(camera.yaw);
-	camera.direction = (yaw_rotation.mul_vector(target.to_vec4())).to_vec3();
-	target = camera.position.add(camera.direction);
-
-	view_matrix = Matrix4::make_third_person(camera.position, target, up_direction);
-
-	Matrix4 scale_matrix = Matrix4::make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
-	Matrix4 translation_matrix = Matrix4::make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
-	Matrix4 rotation_matrix_x = Matrix4::make_rotation_x(mesh.rotation.x);
-	Matrix4 rotation_matrix_y = Matrix4::make_rotation_y(mesh.rotation.y);
-	Matrix4 rotation_matrix_z = Matrix4::make_rotation_z(mesh.rotation.z);
-
-	Triangle3 transformed_triangle3;
-	Triangle4 transformed_triangle;
-	Triangle4 projected_triangle;
-
-	for (int i = 0; i < mesh.faces.size(); i++) {
-		Face& mesh_face = mesh.faces[i];
-
-		std::array<Vector3, 3> face_vertices;
-		face_vertices[0] = mesh.vertices[mesh_face.a];
-		face_vertices[1] = mesh.vertices[mesh_face.b];
-		face_vertices[2] = mesh.vertices[mesh_face.c];
-
-		for (int j = 0; j < 3; j++) {
-			Vector4 transformed_vertex = face_vertices[j].to_vec4();
-			world_matrix = Matrix4::make_world(scale_matrix, rotation_matrix_x,
-				rotation_matrix_y, rotation_matrix_z, translation_matrix);
-
-			//transform vertex to world space
-			transformed_vertex = world_matrix.mul_vector(transformed_vertex);
-
-			//transform vertex to camera space
-			transformed_vertex = view_matrix.mul_vector(transformed_vertex);
-
-			transformed_triangle.points[j] = transformed_vertex;
-		}
-		transformed_triangle3 = transformed_triangle.to_triangle3();
-		transformed_triangle3.compute_face_normal();
+		Mesh& mesh = get_mesh(mesh_index);
 
 
-		if (cull_type == Draw::Cull_type::CULL_BACKFACE) {
-			Vector3 origin(0, 0, 0);
-			if (transformed_triangle3.backface(origin)) {
-				continue;
-			}
-		}
+		/*mesh.rotation.x += 0.0f * delta_time;
+		mesh.rotation.y += 0.0f * delta_time;
+		mesh.rotation.z += 0.0f * delta_time;*/
 
-		Polygon polygon = create_polygon_from_triangle(transformed_triangle3, mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv);
+		//mesh.scale.x = 0.9 * delta_time;
+		//mesh.scale.y = 0.9 * delta_time;
+		//mesh.scale.z = 0.9 * delta_time;
 
-		polygon.clip_polygon();
+		//mesh.translation.x += 1 * delta_time;
+		//mesh.translation.z = 5.0f;
+		//mesh.translation.y = -1.0f;
 
-		std::array<Triangle3, MAX_NUM_POLY_TRIANGLES> triangles_after_clipping;
-		int num_triangles_after_clipping = 0;
+		//camera.position.x += 0.0 * delta_time;
+		//camera.position.y += 0.0 * delta_time;
 
-		if (polygon.num_vertices == 0) continue;
-		polygon.triangles_from_polygon(triangles_after_clipping, num_triangles_after_clipping);
+		//initialize target looking at positive z-axis
+		Vector3 up_direction = { 0, 1, 0 };
+		Vector3 target = { 0, 0, 1 };
+		Matrix4 yaw_rotation = Matrix4::make_rotation_y(camera.yaw);
+		camera.direction = (yaw_rotation.mul_vector(target.to_vec4())).to_vec3();
+		target = camera.position.add(camera.direction);
 
-		for (size_t t = 0; t < num_triangles_after_clipping; t++) {
+		view_matrix = Matrix4::make_third_person(camera.position, target, up_direction);
 
-			Triangle3 triangle_after_clipping = triangles_after_clipping[t];
+		Matrix4 scale_matrix = Matrix4::make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+		Matrix4 translation_matrix = Matrix4::make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
+		Matrix4 rotation_matrix_x = Matrix4::make_rotation_x(mesh.rotation.x);
+		Matrix4 rotation_matrix_y = Matrix4::make_rotation_y(mesh.rotation.y);
+		Matrix4 rotation_matrix_z = Matrix4::make_rotation_z(mesh.rotation.z);
+
+		Triangle3 transformed_triangle3;
+		Triangle4 transformed_triangle;
+		Triangle4 projected_triangle;
+
+		for (int i = 0; i < mesh.faces.size(); i++) {
+			Face& mesh_face = mesh.faces[i];
+
+			std::array<Vector3, 3> face_vertices;
+			face_vertices[0] = mesh.vertices[mesh_face.a];
+			face_vertices[1] = mesh.vertices[mesh_face.b];
+			face_vertices[2] = mesh.vertices[mesh_face.c];
 
 			for (int j = 0; j < 3; j++) {
-				Vector4 projected_point = projection_matrix.mul_project((triangle_after_clipping.points[j]).to_vec4());
+				Vector4 transformed_vertex = face_vertices[j].to_vec4();
+				world_matrix = Matrix4::make_world(scale_matrix, rotation_matrix_x,
+					rotation_matrix_y, rotation_matrix_z, translation_matrix);
 
-				projected_point.y *= -1;
+				//transform vertex to world space
+				transformed_vertex = world_matrix.mul_vector(transformed_vertex);
 
-				projected_point.x *= WINDOW_WIDTH * 0.5f;
-				projected_point.y *= WINDOW_HEIGHT * 0.5f;
+				//transform vertex to camera space
+				transformed_vertex = view_matrix.mul_vector(transformed_vertex);
 
-				projected_point.x += WINDOW_WIDTH * 0.5f;
-				projected_point.y += WINDOW_HEIGHT * 0.5f;
+				transformed_triangle.points[j] = transformed_vertex;
+			}
+			transformed_triangle3 = transformed_triangle.to_triangle3();
+			transformed_triangle3.compute_face_normal();
 
-				projected_triangle.points[j] = projected_point;
+
+			if (cull_type == Draw::Cull_type::CULL_BACKFACE) {
+				Vector3 origin(0, 0, 0);
+				if (transformed_triangle3.backface(origin)) {
+					continue;
+				}
 			}
 
-			float light_factor = -transformed_triangle3.normal_deviation(global_light.direction);
-			projected_triangle.tex_coords = { triangle_after_clipping.tex_coords[0], triangle_after_clipping.tex_coords[1],
-				triangle_after_clipping.tex_coords[2] };
-			projected_triangle.color = global_light.intensity(mesh_face.color, light_factor);
-			triangles_to_render.push_back(projected_triangle);
+			Polygon polygon = create_polygon_from_triangle(transformed_triangle3, mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv);
+
+			polygon.clip_polygon();
+
+			std::array<Triangle3, MAX_NUM_POLY_TRIANGLES> triangles_after_clipping;
+			int num_triangles_after_clipping = 0;
+
+			if (polygon.num_vertices == 0) continue;
+			polygon.triangles_from_polygon(triangles_after_clipping, num_triangles_after_clipping);
+
+			for (size_t t = 0; t < num_triangles_after_clipping; t++) {
+
+				Triangle3 triangle_after_clipping = triangles_after_clipping[t];
+
+				for (int j = 0; j < 3; j++) {
+					Vector4 projected_point = projection_matrix.mul_project((triangle_after_clipping.points[j]).to_vec4());
+
+					projected_point.y *= -1;
+
+					projected_point.x *= WINDOW_WIDTH * 0.5f;
+					projected_point.y *= WINDOW_HEIGHT * 0.5f;
+
+					projected_point.x += WINDOW_WIDTH * 0.5f;
+					projected_point.y += WINDOW_HEIGHT * 0.5f;
+
+					projected_triangle.points[j] = projected_point;
+				}
+
+				float light_factor = -transformed_triangle3.normal_deviation(global_light.direction);
+				projected_triangle.tex_coords = { triangle_after_clipping.tex_coords[0], triangle_after_clipping.tex_coords[1],
+					triangle_after_clipping.tex_coords[2] };
+				projected_triangle.color = global_light.intensity(mesh_face.color, light_factor);
+				projected_triangle.texture = mesh.texture;
+				triangles_to_render.push_back(projected_triangle);
+			}
 		}
 	}
 
@@ -282,7 +289,7 @@ void App::render()
 		}
 
 		if (render_type == Draw::Render_type::RENDER_TEXTURED || render_type == Draw::Render_type::RENDER_TEXTURED_WIRE) {
-			Draw::textured_triangle(triangle4, mesh_texture);
+			Draw::textured_triangle(triangle4, triangle4.texture);
 		}
 
 		if (render_type == Draw::Render_type::RENDER_WIREFRAME_VERTEX) {
@@ -323,7 +330,6 @@ void App::setup_display()
 		quit();
 		return;
 	}
-	load_png_texture_data("./assets/crab.png");
 
 	constexpr float fov_y = 60.0f * static_cast<float>(M_PI) / 180.0f;
 	float aspect_x = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT;
@@ -334,6 +340,10 @@ void App::setup_display()
 	projection_matrix = Matrix4::make_perspective(fov_y, aspect_y, z_near, z_far);
 
 	init_frustum_planes(fov_x, fov_y, z_near, z_far);
+
+	load_mesh("./assets/f22.obj", "./assets/f22.png", Vector3(1, 1, 1), Vector3(-3, 0, 5), Vector3(0, 0, 0));
+	load_mesh("./assets/efa.obj", "./assets/efa.png", Vector3(1, 1, 1), Vector3(3, 0, 5), Vector3(0, 0, 0));
+
 
 	//mesh.load_cube_mesh_data();
 
@@ -350,11 +360,6 @@ inline void App::clear_display_buffer()
 inline void App::clear_z_buffer()
 {
 	memset(z_buffer, 0, static_cast<long long>(WINDOW_HEIGHT) * WINDOW_WIDTH * sizeof(float));
-	/*for (int y = 0; y < WINDOW_HEIGHT; y++) {
-		for (int x = 0; x < WINDOW_WIDTH; x++) {
-			z_buffer[(WINDOW_WIDTH * y) + x] = 1.0;
-		}
-	}*/
 }
 
 
@@ -369,7 +374,6 @@ void App::destroy()
 {
 	delete[] display_buffer;
 	delete[] z_buffer;
-	upng_free(png_texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

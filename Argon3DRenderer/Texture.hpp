@@ -13,10 +13,10 @@ public:
     Texture2(float u, float v);
 };
 
-extern int texture_width;
-extern int texture_height;
-
-extern upng_t* png_texture;
-extern Color* mesh_texture;
-
-void load_png_texture_data(char const* filename);
+//extern int texture_width;
+//extern int texture_height;
+//
+//extern upng_t* png_texture;
+//extern Color* mesh_texture;
+//
+//void load_png_texture_data(char const* filename);

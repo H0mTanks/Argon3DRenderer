@@ -46,6 +46,7 @@ public:
 	std::array<Texture2, 3> tex_coords;
 	mutable Vector3 face_normal = { 0,0,0 };
 	Color color = 0xFFFFFFFF;
+	upng_t* texture;
 public:
 	Triangle3 to_triangle3();
 	Triangle2 to_triangle2();

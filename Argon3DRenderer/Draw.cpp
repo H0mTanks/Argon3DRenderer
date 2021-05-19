@@ -177,7 +177,7 @@ void Draw::fill_top_triangle(int bx, int by, int mx, int my, int cx, int cy, Col
 	}
 }
 
-void Draw::textured_triangle(Triangle4 const& triangle, Color* texture)
+void Draw::textured_triangle(Triangle4 const& triangle, upng_t* texture)
 {
 	Vector4_int a(triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w);
 	Vector4_int b(triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w);
@@ -240,7 +240,7 @@ void Draw::textured_triangle(Triangle4 const& triangle, Color* texture)
 
 
 void Draw::textured_bottom_triangle(Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, Vector2_int const& m,
-	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, Color* texture)
+	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, upng_t* texture)
 {
 	float slope_ab = (float)(a.x - b.x) / (a.y - b.y);
 	float slope_am = (float)(a.x - m.x) / (a.y - m.y);
@@ -277,7 +277,7 @@ void Draw::textured_bottom_triangle(Vector4_int const& a, Vector4_int const& b, 
 
 
 void Draw::textured_top_triangle(Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, Vector2_int const& m,
-	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, Color* texture)
+	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, upng_t* texture)
 {
 	float slope_cb = (float)(c.x - b.x) / (c.y - b.y);
 	float slope_cm = (float)(c.x - m.x) / (c.y - m.y);
@@ -401,7 +401,7 @@ void Draw::fill_pixel(const int x, const int y, const Color color, Vector4_int c
 
 
 void Draw::texel(const int x, const int y, Vector4_int const& a, Vector4_int const& b, Vector4_int const& c, 
-	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, const Color* texture)
+	Texture2 const& a_uv, Texture2 const& b_uv, Texture2 const& c_uv, const upng_t* texture)
 {
 	if (y == 1080 || x == 1920) return;
 	Vector2_int p(x, y);
@@ -419,22 +419,16 @@ void Draw::texel(const int x, const int y, Vector4_int const& a, Vector4_int con
 	interpolated_u /= interpolated_reciprocal_w;
 	interpolated_v /= interpolated_reciprocal_w;
 
-	/*float A = alpha * b.w * c.w;
-	float B = beta * a.w * c.w;
-	float C = gamma * a.w * b.w;
-
-	float interpolated_reciprocal_w = A + B + C;
-	float interpolated_u = (a_uv.u * A + b_uv.u * B + c_uv.u * C) / interpolated_reciprocal_w;
-	float interpolated_v = (a_uv.v * A + b_uv.v * B + c_uv.v * C) / interpolated_reciprocal_w;*/
-
+	int texture_width = upng_get_width(texture);
+	int texture_height = upng_get_height(texture);
 
 	int tex_x = abs(static_cast<int>(interpolated_u * texture_width)) % texture_width;
 	int tex_y = abs(static_cast<int>(interpolated_v * texture_height)) % texture_height;
 
-	//interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
-
 	if (interpolated_reciprocal_w > App::z_buffer[(App::WINDOW_WIDTH * y) + x]) {
-		pixel(x, y, texture[(tex_y * texture_width) + tex_x]);
+		Color* texture_buffer = (Color*)upng_get_buffer(texture);
+
+		pixel(x, y, texture_buffer[(tex_y * texture_width) + tex_x]);
 		App::z_buffer[(App::WINDOW_WIDTH * y) + x] = interpolated_reciprocal_w;
 	}
 }
