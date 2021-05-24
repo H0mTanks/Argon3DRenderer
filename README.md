@@ -5,6 +5,9 @@ upng library was used to decode png images and get them into byte buffers.
 Argon3D reads in a .obj file with an optional png texture and renders the 3D mesh on the screen.
 The mesh can be rotated, translated and scaled through the WASD and Arrow Keys.
 
+
+The different rendering modes supported are shown in the gif below
+
 ![](https://github.com/ActualHomTanks/gifs/blob/main/argon.gif)
 
 ## Concepts learnt and applied in this project
