@@ -20,6 +20,7 @@ Currently the .obj filepath needs to be supplied in the App.cpp file.
 4. Press 4 to render the flat shaded model with wireframe.
 5. Press 5 to render the textured model.
 6. Press 6 to render the textured model with wireframe.
+
 The mesh can be rotated, translated and scaled through the WASD and Arrow Keys.
 
 ## Concepts learnt and applied in this project
